@@ -23,7 +23,7 @@ git clone https://github.com/sysread/page-summarizer.git
 3. Enable "Developer mode" in the top-right corner.
 4. Click "Load unpacked" and select the directory where you cloned the repository.
 5. The extension icon should now appear in your Chrome toolbar.
-6. Right-click the extension icon and choose "Options", then enter your OpenAI API key and preferred GPT-3 model.
+6. Right-click the extension icon and choose "Options", then enter your OpenAI API key and preferred model.
 
 ## Usage
 - Highlight text on any webpage.
