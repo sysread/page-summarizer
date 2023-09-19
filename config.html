@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Configurations</title>
+  </head>
+  <body>
+    <form id="config-form">
+      <label for="apiKey">OpenAI API Key:</label>
+      <input type="text" id="apiKey" name="apiKey"><br><br>
+
+      <label for="model">Select model:</label>
+      <select id="model" name="model">
+        <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+        <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
+        <option value="gpt-4">GPT-4</option>
+      </select><br><br>
+
+      <label for="customPrompts">Custom Prompts (One per line):</label><br>
+      <textarea id="customPrompts" name="customPrompts" rows="4" cols="50"></textarea><br><br>
+
+      <input type="submit" value="Save">
+    </form>
+    <script src="config.js"></script>
+  </body>
+</html>
