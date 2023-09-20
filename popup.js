@@ -1,20 +1,78 @@
 document.addEventListener('DOMContentLoaded', function () {
-  let working = false;
-  const statusElement = document.getElementById('status');
+  const port = chrome.runtime.connect({name: "summarize"});
+  const summaryElement = document.getElementById('summary');
 
-  // Reset the status when the popup is opened
-  chrome.storage.local.get('lastResult', function(data) {
-    if (data.lastSummary) {
-      updateStatus(data.lastSummary);
+  let working = false;
+
+  // Set up the port message listener right here
+  port.onMessage.addListener(function(msg) {
+    if (msg == null) {
+      return;
+    }
+
+    if (msg.done) {
+      working = false;
+
+      if (msg.error != null) {
+        reportError(msg.error);
+      }
+      else if (msg.summary != null && msg.summary.length > 0) {
+        setSummary(msg.summary);
+      }
+
+      return;
+    }
+
+    if (msg.summary != null && msg.summary.length > 0) {
+      updateSummary(marked.marked(msg.summary));
+    }
+    else {
+      reportError('Failed to fetch summary.');
+      working = false;
     }
   });
 
-  function updateStatus(message) {
-    statusElement.innerHTML = marked.marked(message);
+  // Restore the summary when the popup is opened
+  getSummary().then((summary) => {
+    if (summary != null) {
+      updateSummary(marked.marked(summary));
+    }
+  });
+
+  function getSummary() {
+    href = window.location.href;
+
+    return chrome.storage.local.get(['results'])
+      .then((data) => {
+        if (data.results && data.results[href]) {
+          return data.results[href];
+        }
+
+        return null;
+      });
   }
 
-  function resetStatus() {
-    statusElement.textContent = '';
+  function setSummary(summary) {
+    href = window.location.href;
+
+    return chrome.storage.local.get(['results'])
+      .then((data) => {
+        if (!data.results) {
+          data.results = {};
+        }
+
+        data.results[href] = summary;
+
+        chrome.storage.local.set(data);
+      });
+  }
+
+  function updateSummary(message) {
+    summaryElement.innerHTML = message;
+  }
+
+  function reportError(message) {
+    updateSummary(`<span style="color: red; font-style: italic;">Error: ${message}</span>`);
   }
 
   document.getElementById('summarize').addEventListener('click', function () {
@@ -22,25 +80,18 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    updateSummary('Fetching summary...');
     working = true;
-    updateStatus('Fetching summary...');
 
     chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'], function (config) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        let tab = tabs[0];
-
-        chrome.runtime.sendMessage({ action: 'summarize', tabId: tab.id, config: config }, function(response) {
-          working = false;
-
-          if (response && response.summary) {
-            updateStatus(`Summary: ${response.summary}`);
-          } else if (response && response.error) {
-            updateStatus(`<span style="color: red; font-style: italic;">Error: ${response.error}</span>`);
-          } else {
-            updateStatus('Failed to fetch summary.');
-          }
+        port.postMessage({
+          action: 'summarize',
+          tabId: tabs[0].id,
+          config: config
         });
       });
     });
   });
 });
+
