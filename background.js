@@ -8,7 +8,7 @@ function debug() {
   });
 }
 
-async function fetchAndStream(text, config, port) {
+async function fetchAndStream(text, extra, config, port) {
   const headers = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${config.apiKey}`
@@ -17,7 +17,7 @@ async function fetchAndStream(text, config, port) {
   let messages = [
     {
       role: 'system',
-      content: 'You are a browser extension that summarizes the contents of a web page for the user.'
+      content: 'You are a browser extension that helps the user understand the contents of a web page.'
     },
   ];
 
@@ -25,7 +25,12 @@ async function fetchAndStream(text, config, port) {
     messages.push({role: 'user', content: prompt});
   }
 
-  messages.push({role: 'user', content: 'Summarize the this text for me.'});
+  if (extra != "") {
+    messages.push({role: 'user', content: extra});
+  } else {
+    messages.push({role: 'user', content: 'Summarize this text.'});
+  }
+
   messages.push({role: 'user', content: text});
 
   debug("PROMPT:", messages);
@@ -114,8 +119,9 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name == "summarize") {
     port.onMessage.addListener((msg) => {
       if (msg.action === "summarize") {
-        let tabId = msg.tabId;
-        let config = msg.config;
+        const tabId = msg.tabId;
+        const config = msg.config;
+        const extra = msg.extra;
 
         chrome.scripting.executeScript(
           {
@@ -126,33 +132,10 @@ chrome.runtime.onConnect.addListener((port) => {
           },
           (result) => {
             const text = result[0].result;
-            fetchAndStream(text, config, port);
+            fetchAndStream(text, extra, config, port);
           }
         );
       }
     });
   }
-});
-
-chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  if (request.action === "summarize") {
-    let tabId = request.tabId;
-    let config = request.config;
-
-    chrome.scripting.executeScript(
-      {
-        target: { tabId },
-        func: function () {
-          return document.body.innerText;
-        },
-      },
-      (result) => {
-        sendResponse(true);
-        const text = result[0].result;
-        fetchAndStream(text, config);
-      }
-    );
-  }
-
-  return true;
 });

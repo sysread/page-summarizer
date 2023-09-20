@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let working = false;
 
-  // Set up the port message listener right here
+  // Set up the port message listener
   port.onMessage.addListener(function(msg) {
     if (msg == null) {
       return;
@@ -88,10 +88,36 @@ document.addEventListener('DOMContentLoaded', function () {
         port.postMessage({
           action: 'summarize',
           tabId: tabs[0].id,
-          config: config
+          config: config,
+          extra: getExtraInstructions()
         });
       });
     });
   });
-});
 
+  //----------------------------------------------------------------------------
+  // powers the doc hint in the textarea
+  //----------------------------------------------------------------------------
+  const textarea = document.getElementById("extra-instructions");
+  const hint = "Please summarize this web page.";
+
+  textarea.value = hint;
+
+  textarea.addEventListener("focus", () => {
+    if (textarea.value === hint) {
+      textarea.value = "";
+      textarea.classList.remove("hint");
+    }
+  });
+
+  textarea.addEventListener("blur", () => {
+    if (textarea.value === "") {
+      textarea.value = hint;
+      textarea.classList.add("hint");
+    }
+  });
+
+  function getExtraInstructions() {
+    return textarea.value;
+  }
+});

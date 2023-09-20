@@ -13,6 +13,16 @@
         overflow-y: auto;
         word-wrap: break-word;
       }
+
+      #extra-instructions {
+        width: 80%;
+        height: 50px;
+        margin: 1em 0em;
+      }
+
+      .hint {
+        color: grey;
+      }
     </style>
 
   </head>
@@ -20,6 +30,8 @@
     <h1>Page Summarizer</h1>
 
     <button id="summarize">Summarize Page</button>
+
+    <textarea id="extra-instructions" class="hint"></textarea>
 
     <div id="summary"></div>
 
