@@ -1,0 +1,56 @@
+name: Build and Release Browser Extension
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.RELEASE_PAT }}
+
+    # Build Chrome Extension
+    - name: Build Chrome Extension
+      run: |
+        zip -r chrome-extension.zip . -x "*.git*" "node_modules/*" "other_exclude_patterns/*"
+
+    # Install node (dep for ff ext)
+    - name: Install Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    # Install web-ext (dep for ff ext)
+    - name: Install web-ext CLI tool
+      run: npm install --global web-ext
+
+    # Build Firefox Extension
+    - name: Build Firefox Extension
+      run: |
+        web-ext build --overwrite-dest --filename=firefox-extension.zip
+
+    # Generate and push a release tag
+    - name: Generate and Push Tag
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git tag auto-release-tag-${{ github.sha }}
+        git push https://${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git --tags
+      shell: bash
+
+    # Create GitHub Release and upload artifacts
+    - name: Create and Upload Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: auto-release-tag-${{ github.sha }}
+        token: ${{ secrets.RELEASE_PAT }}
+        draft: false
+        files: |
+          ./chrome-extension.zip
+          ./web-ext-artifacts/firefox-extension.zip
