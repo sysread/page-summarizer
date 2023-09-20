@@ -2,8 +2,28 @@
 <html>
   <head>
     <title>Configurations</title>
+
+    <style>
+    #status {
+      display: none;
+      padding: 1em;
+      margin: 1em 0em;
+      font-style: italic;
+      background-color: rgb(40, 167, 69);
+      color: white;
+      border-radius: 5px;
+    }
+
+    textarea {
+      width: 50%;
+    }
+    </style>
   </head>
   <body>
+    <h1>Page summarizer settings</h1>
+
+    <div id="status"></div>
+
     <form id="config-form">
       <label for="apiKey">OpenAI API Key:</label>
       <input type="text" id="apiKey" name="apiKey"><br><br>
@@ -17,6 +37,9 @@
 
       <label for="customPrompts">Custom Prompts (One per line):</label><br>
       <textarea id="customPrompts" name="customPrompts" rows="4" cols="50"></textarea><br><br>
+
+      <label for="debug">Debug Mode:</label>
+      <input type="checkbox" id="debug" name="debug"><br><br>
 
       <input type="submit" value="Save">
     </form>

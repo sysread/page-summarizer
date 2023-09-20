@@ -12,12 +12,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         },
       },
       (result) => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError);
-          return;
+        let text = result[0].result;
+
+        messages = [
+          {role: 'system', content: 'You are a browser extension that summarizes the content of a web page.'},
+          {role: 'user', content: 'Summarize the contents of this web page for me.'},
+          {role: 'user', content: text}
+        ];
+
+        for (const prompt of config.customPrompts) {
+          messages.unshift({role: 'user', content: prompt});
         }
 
-        let text = result[0].result;
+        if (config.debug) {
+          console.log("Sending prompt:", messages);
+        }
 
         // Send the request to the API
         fetch("https://api.openai.com/v1/chat/completions", {
@@ -28,11 +37,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           },
           body: JSON.stringify({
             model: config.model,
-            messages: [{role: 'user', content: 'Summarize the text for me.'}, {role: 'system', content: text}]
+            messages: messages
           })
         })
         // Parse the response
         .then(response => response.json())
+        .then(data => {
+          if (config.debug) {
+            console.log("Response:", data);
+          }
+
+          return data;
+        })
         // Send the response to the popup
         .then(data => {
           // Extract the summary or error

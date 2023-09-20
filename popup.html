@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Page Summarizer</title>
-  <style>
-    body {
-      width: 600px;
-      height: 600px;
-    }
+  <head>
+    <title>Page Summarizer</title>
 
-    #status {
-      overflow-y: auto;
-      word-wrap: break-word;
-    }
-  </style>
+    <style>
+      body {
+        width: 600px;
+        height: 600px;
+      }
 
-  <script src="assets/marked.min.js"></script>
-</head>
-<body>
-  <h1>Page Summarizer</h1>
-  <button id="summarize">Summarize Page</button>
-  <div id="status"></div>
-  <script src="popup.js"></script>
-</body>
+      #status {
+        overflow-y: auto;
+        word-wrap: break-word;
+      }
+    </style>
+
+    <script src="assets/marked.min.js"></script>
+  </head>
+  <body>
+    <h1>Page Summarizer</h1>
+
+    <button id="summarize">Summarize Page</button>
+
+    <div id="status"></div>
+
+    <div id="debug"></div>
+
+    <script src="popup.js"></script>
+  </body>
 </html>

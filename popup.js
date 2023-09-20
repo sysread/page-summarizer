@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     working = true;
     updateStatus('Fetching summary...');
 
-    chrome.storage.sync.get(['apiKey', 'model'], function (config) {
+    chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'], function (config) {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         let tab = tabs[0];
 
