@@ -19,14 +19,13 @@ an API key from OpenAI.
 
 ### Installation from Latest Release
 
-1. Go to the [Releases](https://github.com/sysread/page-summarizer/releases) page of the repository.
-2. Download the latest `chrome-extension.zip` and/or `firefox-extension.zip`.
-3. Unzip the downloaded file(s).
-4. Open Google Chrome and navigate to `chrome://extensions/`.
-5. Enable "Developer mode" in the top-right corner.
-6. Click "Load unpacked" and select the unzipped directory.
-7. The extension icon should now appear in your Chrome toolbar.
-8. Right-click the extension icon and choose "Options", then enter your OpenAI API key and preferred model.
+1. Go to the [Releases](https://github.com/sysread/page-summarizer/releases) page of this repository.
+2. Download the latest `chrome-extension.zip` or `firefox-extension.zip` based on your browser.
+3. Unzip the downloaded file.
+4. Open Google Chrome and navigate to chrome://extensions/.
+5. Drag the unzipped folder into the extensions page.
+6. The extension icon should now appear in your Chrome toolbar.
+7. Right-click the extension icon and choose "Options", then enter your OpenAI API key and preferred model.
 
 ### Manual Installation from Repo
 
