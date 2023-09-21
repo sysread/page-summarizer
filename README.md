@@ -13,6 +13,7 @@ click the extension icon, and get a concise summary!
 - Uses the OpenAI conversations API
 
 ![Summarize a web page](./docs/summarize-page.gif)
+
 ![Summarize selected text](./docs/summarize-selection.gif)
 
 ## Installation
