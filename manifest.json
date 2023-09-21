@@ -3,8 +3,24 @@
   "name": "Page Summarizer",
   "version": "1.0",
   "description": "Summarize web pages using OpenAI API",
-  "permissions": ["activeTab", "storage", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "contextMenus"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content.js",
+        "assets/marked.min.js"
+      ]
+    }
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

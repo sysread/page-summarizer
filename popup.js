@@ -2,43 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const port = chrome.runtime.connect({name: "summarize"});
   const summaryElement = document.getElementById('summary');
 
-  let working = false;
-
-  // Set up the port message listener
-  port.onMessage.addListener(function(msg) {
-    if (msg == null) {
-      return;
-    }
-
-    if (msg.done) {
-      working = false;
-
-      if (msg.error != null) {
-        reportError(msg.error);
-      }
-      else if (msg.summary != null && msg.summary.length > 0) {
-        setSummary(msg.summary);
-      }
-
-      return;
-    }
-
-    if (msg.summary != null && msg.summary.length > 0) {
-      updateSummary(marked.marked(msg.summary));
-    }
-    else {
-      reportError('Failed to fetch summary.');
-      working = false;
-    }
-  });
-
-  // Restore the summary when the popup is opened
-  getSummary().then((summary) => {
-    if (summary != null) {
-      updateSummary(marked.marked(summary));
-    }
-  });
-
   function getSummary() {
     return new Promise((resolve, _reject) => {
       chrome.tabs.query({active: true, currentWindow: true})
@@ -79,6 +42,16 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSummary(`<span style="color: red; font-style: italic;">Error: ${message}</span>`);
   }
 
+  let working = false;
+
+  // Restore the last page summary when the popup is opened
+  getSummary().then((summary) => {
+    if (summary != null) {
+      updateSummary(marked.marked(summary));
+    }
+  });
+
+  // Handle the summarize button click
   document.getElementById('summarize').addEventListener('click', function () {
     if (working) {
       return;
@@ -89,11 +62,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
       .then((config) => {
-        if (config.apiKey == null || config.apiKey.length === 0) {
-          reportError('API key is not set.');
-          return;
-        }
-
         chrome.tabs.query({active: true, currentWindow: true})
           .then((tabs) => {
             port.postMessage({
@@ -104,6 +72,32 @@ document.addEventListener('DOMContentLoaded', function () {
             });
           });
       });
+  });
+
+  // Set up the port message listener
+  port.onMessage.addListener(function(msg) {
+    if (msg == null) {
+      return;
+    }
+
+    if (msg.done) {
+      working = false;
+
+      if (msg.error != null) {
+        reportError(msg.error);
+      } else if (msg.summary != null && msg.summary.length > 0) {
+        setSummary(msg.summary);
+      }
+
+      return;
+    }
+
+    if (msg.summary != null && msg.summary.length > 0) {
+      updateSummary(marked.marked(msg.summary));
+    } else {
+      reportError('Failed to fetch summary.');
+      working = false;
+    }
   });
 
   //----------------------------------------------------------------------------
