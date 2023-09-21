@@ -89,6 +89,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
       .then((config) => {
+        if (config.apiKey == null || config.apiKey.length === 0) {
+          reportError('API key is not set.');
+          return;
+        }
+
         chrome.tabs.query({active: true, currentWindow: true})
           .then((tabs) => {
             port.postMessage({

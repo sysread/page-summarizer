@@ -12,6 +12,7 @@
       #summary {
         overflow-y: auto;
         word-wrap: break-word;
+        padding: 1em 0em;
       }
 
       #extra-instructions {
@@ -29,9 +30,8 @@
   <body>
     <h1>Page Summarizer</h1>
 
-    <button id="summarize">Summarize Page</button>
-
-    <textarea id="extra-instructions" class="hint"></textarea>
+    <div><textarea id="extra-instructions" class="hint"></textarea></div>
+    <div><button id="summarize">Summarize page</button></div>
 
     <div id="summary"></div>
 
