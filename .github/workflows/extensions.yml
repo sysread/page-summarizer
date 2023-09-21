@@ -20,21 +20,6 @@ jobs:
       run: |
         zip -r chrome-extension.zip . -x "*.git*" "node_modules/*" "other_exclude_patterns/*"
 
-    # Install node (dep for ff ext)
-    - name: Install Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    # Install web-ext (dep for ff ext)
-    - name: Install web-ext CLI tool
-      run: npm install --global web-ext
-
-    # Build Firefox Extension
-    - name: Build Firefox Extension
-      run: |
-        web-ext build --overwrite-dest --filename=firefox-extension.zip
-
     # Generate and push a release tag
     - name: Generate and Push Tag
       run: |
@@ -53,4 +38,3 @@ jobs:
         draft: false
         files: |
           ./chrome-extension.zip
-          ./web-ext-artifacts/firefox-extension.zip
