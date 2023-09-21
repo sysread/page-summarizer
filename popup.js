@@ -40,30 +40,34 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function getSummary() {
-    href = window.location.href;
+    return new Promise((resolve, _reject) => {
+      chrome.tabs.query({active: true, currentWindow: true})
+        .then((tabs) => {
+          const url = tabs[0].url;
 
-    return chrome.storage.local.get(['results'])
-      .then((data) => {
-        if (data.results && data.results[href]) {
-          return data.results[href];
-        }
-
-        return null;
-      });
+          chrome.storage.local.get('results')
+            .then((data) => {
+              if (data.results && data.results[url]) {
+                resolve(data.results[url]);
+              } else {
+                resolve(null);
+              }
+            });
+        });
+    });
   }
 
   function setSummary(summary) {
-    href = window.location.href;
+    chrome.tabs.query({active: true, currentWindow: true})
+      .then((tabs) => {
+        var url = tabs[0].url;
 
-    return chrome.storage.local.get(['results'])
-      .then((data) => {
-        if (!data.results) {
-          data.results = {};
-        }
-
-        data.results[href] = summary;
-
-        chrome.storage.local.set(data);
+        chrome.storage.local.get('results')
+          .then((data) => {
+            var results = data.results || {};
+            results[url] = summary;
+            chrome.storage.local.set({results: results});
+          });
       });
   }
 
@@ -83,16 +87,18 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSummary('Fetching summary...');
     working = true;
 
-    chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'], function (config) {
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        port.postMessage({
-          action: 'summarize',
-          tabId: tabs[0].id,
-          config: config,
-          extra: getExtraInstructions()
-        });
+    chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
+      .then((config) => {
+        chrome.tabs.query({active: true, currentWindow: true})
+          .then((tabs) => {
+            port.postMessage({
+              action: 'summarize',
+              tabId: tabs[0].id,
+              config: config,
+              extra: getExtraInstructions()
+            });
+          });
       });
-    });
   });
 
   //----------------------------------------------------------------------------

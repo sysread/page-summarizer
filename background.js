@@ -1,11 +1,12 @@
 function debug() {
   const args = arguments;
 
-  chrome.storage.sync.get(['debug'], function (config) {
-    if (config.debug) {
-      console.log(...args);
-    }
-  });
+  chrome.storage.sync.get(['debug'])
+    .then((config) => {
+      if (config.debug) {
+        console.log(...args);
+      }
+    });
 }
 
 async function fetchAndStream(text, extra, config, port) {
