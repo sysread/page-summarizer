@@ -71,12 +71,32 @@ async function fetchAndStream(text, extra, port) {
             break;
           }
 
+          // Some errors are returned as the initial message, but they can be
+          // multi-line, so we have to attempt to parse them here to see if
+          // they are an error. If the chunk cannot be parsed as JSON, then it
+          // is a normal message chunk.
+          try {
+            const data = JSON.parse(new TextDecoder().decode(chunk));
+
+            if (data.error) {
+              port.postMessage({
+                summary: null,
+                error: data.error.message,
+                done: true
+              });
+
+              break;
+            }
+          } catch (error) {
+            ; // Do nothing
+          }
+
+          debug("RECV:", chunk);
+
           const lines = new TextDecoder()
             .decode(chunk)
             .split("\n")
             .filter((line) => line !== "");
-
-          debug("RECV:", lines);
 
           for (const line of lines) {
             if (line == "data: [DONE]") {
