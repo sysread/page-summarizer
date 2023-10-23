@@ -221,6 +221,7 @@ async function fetchAndStreamFormFill(port, prompt, extra) {
     });
   }
 
+  messages.push({role: 'user', content: 'Do not wrap your response in quotes.'});
   messages.push({role: 'user', content: prompt});
 
   return fetchAndStream(port, messages);

@@ -8,7 +8,9 @@ chrome.runtime.onConnect.addListener((port) => {
   let target;
 
   function updateTarget(msg) {
-    target.value = msg;
+    const div = document.createElement('div');
+    div.innerHTML = marked.marked(msg);
+    target.value = div.innerText;
   }
 
   function reportError(msg) {
