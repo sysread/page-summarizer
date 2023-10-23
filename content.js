@@ -43,7 +43,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
     // Create the close button
     const closeButton              = document.createElement('button');
-    closeButton.id                 = 'closeOverlay';
+    closeButton.id                 = 'closeSummaryOverlay';
     closeButton.innerHTML          = 'X';
     closeButton.style.position     = 'absolute';
     closeButton.style.top          = '10px';

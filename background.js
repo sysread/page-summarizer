@@ -9,11 +9,12 @@ function debug() {
     });
 }
 
-async function fetchAndStream(text, extra, port) {
+async function fetchAndStream(port, messages) {
   chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
     .then(async (config) => {
       if (config.apiKey == null || config.apiKey.length === 0) {
         port.postMessage({
+          action: 'recvCompletion',
           summary: null,
           error: 'API key is not set.',
           done: true
@@ -26,25 +27,6 @@ async function fetchAndStream(text, extra, port) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${config.apiKey}`
       };
-
-      let messages = [
-        {
-          role: 'system',
-          content: 'You are a browser extension that helps the user understand the contents of a web page.'
-        },
-      ];
-
-      for (const prompt of config.customPrompts) {
-        messages.push({role: 'user', content: prompt});
-      }
-
-      if (extra != "") {
-        messages.push({role: 'user', content: extra});
-      } else {
-        messages.push({role: 'user', content: 'Summarize this text.'});
-      }
-
-      messages.push({role: 'user', content: text});
 
       debug("PROMPT:", messages);
 
@@ -80,6 +62,7 @@ async function fetchAndStream(text, extra, port) {
 
             if (data.error) {
               port.postMessage({
+                action: 'recvCompletion',
                 summary: null,
                 error: data.error.message,
                 done: true
@@ -101,6 +84,7 @@ async function fetchAndStream(text, extra, port) {
           for (const line of lines) {
             if (line == "data: [DONE]") {
               port.postMessage({
+                action: 'recvCompletion',
                 summary: buff,
                 error: null,
                 done: true
@@ -116,6 +100,7 @@ async function fetchAndStream(text, extra, port) {
 
               if (data.error) {
                 message = {
+                  action: 'recvCompletion',
                   summary: buff,
                   error: data.error.message,
                   done: true
@@ -125,6 +110,7 @@ async function fetchAndStream(text, extra, port) {
                 buff += data.choices[0].delta.content;
 
                 message = {
+                  action: 'recvCompletion',
                   summary: buff,
                   error: null,
                   done: false
@@ -148,6 +134,35 @@ async function fetchAndStream(text, extra, port) {
   });
 }
 
+//------------------------------------------------------------------------------
+// Summarize page
+//------------------------------------------------------------------------------
+async function fetchAndStreamSummary(port, content, extra) {
+  chrome.storage.sync.get(['customPrompts'])
+    .then(async (config) => {
+      let messages = [
+        {role: 'system', content: 'You are a browser extension that helps the user understand the contents of a web page.'},
+      ];
+
+      for (const prompt of config.customPrompts) {
+        messages.push({role: 'user', content: prompt});
+      }
+
+      if (extra != "") {
+        messages.push({role: 'user', content: extra});
+      } else {
+        messages.push({role: 'user', content: 'Summarize this text.'});
+      }
+
+      messages.push({role: 'user', content: content});
+
+      return messages;
+    })
+    .then(async (messages) => {
+      return fetchAndStream(port, messages);
+    });
+}
+
 // Listen for messages from the popup
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name == "summarize") {
@@ -158,7 +173,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
         chrome.scripting.executeScript(
           {target: {tabId}, func: () => { return document.body.innerText }},
-          (result) => { fetchAndStream(result[0].result, extra, port) }
+          (result) => { fetchAndStreamSummary(port, result[0].result, extra) }
         );
       }
     });
@@ -166,7 +181,7 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 //------------------------------------------------------------------------------
-// Context menu
+// Summarize selected text (context menu item)
 //------------------------------------------------------------------------------
 
 // Add the context menu item to summarize selected text
@@ -181,6 +196,36 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId == 'summarizeSelectedText') {
     const text = info.selectionText;
     const port = chrome.tabs.connect(tab.id, {name: 'contentScriptPort'});
-    fetchAndStream(text, "", port);
+    fetchAndStreamSummary(port, text, "");
+  }
+});
+
+//------------------------------------------------------------------------------
+// Fill in form input (context menu item)
+//------------------------------------------------------------------------------
+async function fetchAndStreamFormFill(port, prompt) {
+  return fetchAndStream(port, [
+    {role: 'system', content: 'You are a browser extension that helps the user fill in a form.'},
+    {role: 'user', content: prompt},
+  ]);
+}
+
+chrome.contextMenus.create({
+  id: 'fillForm',
+  title: 'Fill with text using GPT',
+  contexts: ['editable'],
+  documentUrlPatterns: ['<all_urls>']
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId == 'fillForm') {
+    const port = chrome.tabs.connect(tab.id, {name: 'fillForm'});
+    port.postMessage({action: 'displayOverlay'});
+
+    port.onMessage.addListener((msg) => {
+      if (msg.action == 'getCompletion') {
+        fetchAndStreamFormFill(port, msg.text);
+      }
+    });
   }
 });
