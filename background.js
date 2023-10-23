@@ -141,7 +141,10 @@ async function fetchAndStreamSummary(port, content, extra) {
   chrome.storage.sync.get(['customPrompts'])
     .then(async (config) => {
       let messages = [
-        {role: 'system', content: 'You are a browser extension that helps the user understand the contents of a web page.'},
+        {
+          role:    'system',
+          content: 'You are a browser extension that helps the user understand the contents of a web page.',
+        },
       ];
 
       for (const prompt of config.customPrompts) {
@@ -203,11 +206,24 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 //------------------------------------------------------------------------------
 // Fill in form input (context menu item)
 //------------------------------------------------------------------------------
-async function fetchAndStreamFormFill(port, prompt) {
-  return fetchAndStream(port, [
-    {role: 'system', content: 'You are a browser extension that helps the user fill in a form.'},
-    {role: 'user', content: prompt},
-  ]);
+async function fetchAndStreamFormFill(port, prompt, extra) {
+  let messages = [
+    {
+      role:    'system',
+      content: 'You are a browser extension that helps the user fill in a form.'
+    },
+  ]
+
+  if (extra != null && extra.length > 0) {
+    messages.push({
+      role:    'user',
+      content: `For context, the page contains the following text: ${extra}`,
+    });
+  }
+
+  messages.push({role: 'user', content: prompt});
+
+  return fetchAndStream(port, messages);
 }
 
 chrome.contextMenus.create({
@@ -224,7 +240,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
     port.onMessage.addListener((msg) => {
       if (msg.action == 'getCompletion') {
-        fetchAndStreamFormFill(port, msg.text);
+        fetchAndStreamFormFill(port, msg.text, msg.extra);
       }
     });
   }
