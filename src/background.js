@@ -1,3 +1,33 @@
+//------------------------------------------------------------------------------
+// Reload content scripts on extension update
+//------------------------------------------------------------------------------
+const contentScripts = [
+  'src/summarize_selection.js',
+  'src/form_fill.js',
+];
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'update') {
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach((tab) => {
+        // Skip chrome:// URLs, tab groups, unloaded tabs, etc.
+        if (!tab.url || tab.url.startsWith('chrome://')) {
+          return;
+        }
+
+        contentScripts.forEach((script) => {
+          chrome.scripting
+            .executeScript({target: { tabId: tab.id }, files: [script]})
+            .catch((err) => {
+              console.debug(`Unable to inject ${script} into tab ${tab.id}: ${err.message}`);
+              console.debug("Tab", tab);
+            });
+        });
+      });
+    });
+  }
+});
+
 function debug() {
   const args = arguments;
 
