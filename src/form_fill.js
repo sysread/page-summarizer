@@ -7,10 +7,20 @@ chrome.runtime.onConnect.addListener((port) => {
   let overlay;
   let target;
 
+  function fillText(element, textToFill) {
+    if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+      element.value = textToFill;
+    } else if (element.getAttribute('contenteditable') === 'true') {
+      element.textContent = textToFill;  // or element.innerHTML = textToFill;
+    } else {
+      console.warn("Element type not supported", element);
+    }
+  }
+
   function updateTarget(msg) {
     const div = document.createElement('div');
     div.innerHTML = marked.marked(msg);
-    target.value = div.innerText;
+    fillText(target, div.innerText);
   }
 
   function reportError(msg) {
