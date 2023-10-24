@@ -47,6 +47,11 @@ function debug() {
     });
 }
 
+//------------------------------------------------------------------------------
+// This bit is the meat. It takes the list of message prompts and sends them to
+// OpeanAI's chat completions endpoint. It then streams the responses back to
+// the specified port.
+//------------------------------------------------------------------------------
 async function fetchAndStream(port, messages) {
   chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
     .then(async (config) => {
