@@ -188,10 +188,12 @@ chrome.runtime.onConnect.addListener((port) => {
 //------------------------------------------------------------------------------
 
 // Add the context menu item to summarize selected text
-chrome.contextMenus.create({
-  id: 'summarizeSelectedText',
-  title: 'Summarize selection',
-  contexts: ['selection']
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'summarizeSelectedText',
+    title: 'Summarize selection',
+    contexts: ['selection']
+  });
 });
 
 // Listen for clicks on the context menu item
@@ -227,11 +229,13 @@ async function fetchAndStreamFormFill(port, prompt, extra) {
   return fetchAndStream(port, messages);
 }
 
-chrome.contextMenus.create({
-  id: 'fillForm',
-  title: 'Fill with text using GPT',
-  contexts: ['editable'],
-  documentUrlPatterns: ['<all_urls>']
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'fillForm',
+    title: 'Fill with text using GPT',
+    contexts: ['editable'],
+    documentUrlPatterns: ['<all_urls>']
+  });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
