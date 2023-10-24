@@ -5,6 +5,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
   let overlayHost;
   let overlay;
+  let instruction;
   let target;
 
   function fillText(element, textToFill) {
@@ -28,6 +29,17 @@ chrome.runtime.onConnect.addListener((port) => {
     removeOverlay();
   }
 
+  function restoreFocus(event) {
+    if (event.target != instruction) {
+      event.stopPropagation();
+      event.preventDefault();
+      instruction.focus();
+      return false;
+    }
+
+    return true;
+  }
+
   function removeOverlay() {
     if (overlayHost != null) {
       overlayHost.remove();
@@ -35,6 +47,9 @@ chrome.runtime.onConnect.addListener((port) => {
 
     overlayHost = null;
     overlay = null;
+    instruction = null;
+
+    document.removeEventListener('focus', restoreFocus, true);
   }
 
   function displayOverlay() {
@@ -65,11 +80,11 @@ chrome.runtime.onConnect.addListener((port) => {
     instructionLabel.innerHTML        = 'What would you like me to write?';
 
     // Create the textarea for user instructions
-    const instructionTextarea         = document.createElement('textarea');
-    instructionTextarea.id            = 'instructions';
-    instructionTextarea.style.width   = '100%';
-    instructionTextarea.style.height  = '300px';
-    instructionTextarea.style.margin  = '10px 0';
+    instruction                       = document.createElement('textarea');
+    instruction.id                    = 'instructions';
+    instruction.style.width           = '100%';
+    instruction.style.height          = '300px';
+    instruction.style.margin          = '10px 0';
 
     const includePageContentCheckbox  = document.createElement('input');
     includePageContentCheckbox.type   = 'checkbox';
@@ -91,7 +106,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
     // Add the submit button handler to send a message back to background.js
     submitButton.addEventListener('click', () => {
-      const instructions       = instructionTextarea.value;
+      const instructions       = instruction.value;
       const includePageContent = includePageContentCheckbox.checked;
       const contents           = includePageContent ? document.body.innerText : "";
 
@@ -127,7 +142,7 @@ chrome.runtime.onConnect.addListener((port) => {
     // Append elements to the overlay
     overlay.appendChild(closeButton);
     overlay.appendChild(instructionLabel);
-    overlay.appendChild(instructionTextarea);
+    overlay.appendChild(instruction);
     overlay.appendChild(includePageContent);
     overlay.appendChild(submitButton);
 
@@ -136,7 +151,11 @@ chrome.runtime.onConnect.addListener((port) => {
     document.body.insertBefore(overlayHost, document.body.firstChild);
 
     // Focus the textarea
-    instructionTextarea.focus();
+    instruction.focus();
+
+    // Prevent focus from leaving the textarea (some sites will steal focus as
+    // part of their implementation of a contenteditable non-form element).
+    document.addEventListener('focus', restoreFocus, true);
   }
 
   port.onMessage.addListener((msg) => {
