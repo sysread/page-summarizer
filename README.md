@@ -61,6 +61,14 @@ though.
 - Select the text you wish to summarize
 - Right click and choose "Summarize selection" in the context menu
 
+### Fill in text
+
+- Click on the text area you want to fill in
+- Right click and choose "Fill with text using GPT"
+- In the dialog box that appears, explain what you want GPT to say
+- Optionally check 'Include page contents?' if context may be needed
+- Click "Submit"
+
 ## Troubleshooting
 
 - Make sure you've entered the correct OpenAI API key.
