@@ -13,8 +13,8 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "content.js",
-        "form.js",
+        "summarize_selection.js",
+        "form_fill.js",
         "assets/marked.min.js"
       ]
     }
