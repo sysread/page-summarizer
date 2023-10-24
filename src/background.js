@@ -2,12 +2,13 @@
 // Reload content scripts on extension update
 //------------------------------------------------------------------------------
 const contentScripts = [
+  'assets/marked.min.js',
   'src/summarize_selection.js',
   'src/form_fill.js',
 ];
 
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'update') {
+function reloadContentScripts(details) {
+  if (details.reason == 'update') {
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach((tab) => {
         // Skip chrome:// URLs, tab groups, unloaded tabs, etc.
@@ -15,6 +16,7 @@ chrome.runtime.onInstalled.addListener((details) => {
           return;
         }
 
+        // Reload each of the content scripts
         contentScripts.forEach((script) => {
           chrome.scripting
             .executeScript({target: { tabId: tab.id }, files: [script]})
@@ -24,9 +26,15 @@ chrome.runtime.onInstalled.addListener((details) => {
             });
         });
       });
+
+      // Only execute this callback *once*. The addListener below will be
+      // picked up the next time the background worker starts.
+      chrome.runtime.onInstalled.removeListener(reloadContentScripts);
     });
   }
-});
+}
+
+chrome.runtime.onInstalled.addListener(reloadContentScripts);
 
 function debug() {
   const args = arguments;
@@ -42,7 +50,7 @@ function debug() {
 async function fetchAndStream(port, messages) {
   chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
     .then(async (config) => {
-      if (config.apiKey == null || config.apiKey.length === 0) {
+      if (config.apiKey == null || config.apiKey.length == 0) {
         port.postMessage({
           action: 'recvCompletion',
           summary: null,
@@ -65,12 +73,12 @@ async function fetchAndStream(port, messages) {
 
       try {
         let response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
+          method:  "POST",
           headers: headers,
-          body: JSON.stringify({
-            model: config.model,
+          body:    JSON.stringify({
+            model:    config.model,
             messages: messages,
-            stream: true
+            stream:   true
           })
         });
 
@@ -92,10 +100,10 @@ async function fetchAndStream(port, messages) {
 
             if (data.error) {
               port.postMessage({
-                action: 'recvCompletion',
+                action:  'recvCompletion',
                 summary: null,
-                error: data.error.message,
-                done: true
+                error:   data.error.message,
+                done:    true
               });
 
               break;
@@ -114,10 +122,10 @@ async function fetchAndStream(port, messages) {
           for (const line of lines) {
             if (line == "data: [DONE]") {
               port.postMessage({
-                action: 'recvCompletion',
+                action:  'recvCompletion',
                 summary: buff,
-                error: null,
-                done: true
+                error:   null,
+                done:    true
               });
 
               break;
@@ -130,20 +138,20 @@ async function fetchAndStream(port, messages) {
 
               if (data.error) {
                 message = {
-                  action: 'recvCompletion',
+                  action:  'recvCompletion',
                   summary: buff,
-                  error: data.error.message,
-                  done: true
+                  error:   data.error.message,
+                  done:    true
                 };
               }
               else if (data.choices[0].delta.content) {
                 buff += data.choices[0].delta.content;
 
                 message = {
-                  action: 'recvCompletion',
+                  action:  'recvCompletion',
                   summary: buff,
-                  error: null,
-                  done: false
+                  error:   null,
+                  done:    false
                 };
               }
 
@@ -154,7 +162,12 @@ async function fetchAndStream(port, messages) {
         }
       }
       catch (error) {
-        console.error("Error:", error);
+        if (error == 'Error: Attempting to use a disconnected port object') {
+          return;
+        }
+        else {
+          console.error(error);
+        }
       }
       finally {
         if (reader) {
@@ -200,7 +213,7 @@ async function fetchAndStreamSummary(port, content, extra) {
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name == "summarize") {
     port.onMessage.addListener((msg) => {
-      if (msg.action === "summarize") {
+      if (msg.action == "summarize") {
         const tabId = msg.tabId;
         const extra = msg.extra;
 
