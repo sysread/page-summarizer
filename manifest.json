@@ -9,34 +9,34 @@
     "scripting",
     "contextMenus"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "assets/icon_16.png",
+    "48": "assets/icon_48.png",
+    "128": "assets/icon_128.png"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": [
-        "summarize_selection.js",
-        "form_fill.js",
-        "assets/marked.min.js"
+        "assets/marked.min.js",
+        "src/summarize_selection.js",
+        "src/form_fill.js"
       ]
     }
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup.html",
     "default_icon": {
-      "16": "icon_16.png",
-      "48": "icon_48.png",
-      "128": "icon_128.png"
+      "16": "assets/icon_16.png",
+      "48": "assets/icon_48.png",
+      "128": "assets/icon_128.png"
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.js"
   },
-  "options_page": "config.html",
-  "icons": {
-    "16": "icon_16.png",
-    "48": "icon_48.png",
-    "128": "icon_128.png"
-  }
+  "options_page": "src/config.html"
 }
