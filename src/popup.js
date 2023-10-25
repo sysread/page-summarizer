@@ -1,8 +1,30 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const port = chrome.runtime.connect({name: "summarize"});
-  const summaryElement = document.getElementById('summary');
+  const port   = chrome.runtime.connect({name: "summarize"});
+  const target = document.getElementById('summary');
 
-  function getSummary() {
+  //----------------------------------------------------------------------------
+  // powers the doc hint in the extra instructions text area
+  //----------------------------------------------------------------------------
+  const extra = document.getElementById("extra-instructions");
+  const hint = "Please summarize this web page.";
+
+  extra.value = hint;
+
+  extra.addEventListener("focus", () => {
+    if (extra.value == hint) {
+      extra.value = "";
+      extra.classList.remove("hint");
+    }
+  });
+
+  extra.addEventListener("blur", () => {
+    if (extra.value == "") {
+      extra.value = hint;
+      extra.classList.add("hint");
+    }
+  });
+
+  function restoreSummary() {
     return new Promise((resolve, _reject) => {
       chrome.tabs.query({active: true, currentWindow: true})
         .then((tabs) => {
@@ -23,11 +45,11 @@ document.addEventListener('DOMContentLoaded', function () {
   function setSummary(summary) {
     chrome.tabs.query({active: true, currentWindow: true})
       .then((tabs) => {
-        var url = tabs[0].url;
+        const url = tabs[0].url;
 
         chrome.storage.local.get('results')
           .then((data) => {
-            var results = data.results || {};
+            let results = data.results || {};
             results[url] = summary;
             chrome.storage.local.set({results: results});
           });
@@ -35,21 +57,34 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateSummary(message) {
-    summaryElement.innerHTML = message;
+    target.innerHTML = message;
   }
 
   function reportError(message) {
     updateSummary(`<span style="color: red; font-style: italic;">Error: ${message}</span>`);
   }
 
-  let working = false;
+  function requestNewSummary() {
+    chrome.tabs.query({active: true, currentWindow: true})
+      .then((tabs) => {
+        port.postMessage({
+          action: 'summarize',
+          tabId:  tabs[0].id,
+          extra:  extra.value
+        });
+      });
+  }
+
 
   // Restore the last page summary when the popup is opened
-  getSummary().then((summary) => {
+  restoreSummary().then((summary) => {
     if (summary != null) {
       updateSummary(marked.marked(summary));
     }
   });
+
+  // Flag to prevent multiple clicks
+  let working = false;
 
   // Handle the summarize button click
   document.getElementById('summarize').addEventListener('click', function () {
@@ -57,21 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    updateSummary('Fetching summary...');
     working = true;
-
-    chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug'])
-      .then((config) => {
-        chrome.tabs.query({active: true, currentWindow: true})
-          .then((tabs) => {
-            port.postMessage({
-              action: 'summarize',
-              tabId: tabs[0].id,
-              config: config,
-              extra: getExtraInstructions()
-            });
-          });
-      });
+    updateSummary('Fetching summary...');
+    requestNewSummary();
   });
 
   // Set up the port message listener
@@ -80,49 +103,26 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (msg.done) {
-      working = false;
+    switch (msg.action) {
+      case 'gptMessage':
+        updateSummary(marked.marked(msg.summary));
+        break;
 
-      if (msg.error != null) {
-        reportError(msg.error);
-      } else if (msg.summary != null && msg.summary.length > 0) {
+      case 'gptDone':
+        updateSummary(marked.marked(msg.summary));
         setSummary(msg.summary);
-      }
+        working = false;
+        break;
 
-      return;
-    }
+      case 'gptError':
+        reportError(msg.error);
+        working = false;
+        break;
 
-    if (msg.summary != null && msg.summary.length > 0) {
-      updateSummary(marked.marked(msg.summary));
-    } else {
-      reportError('Failed to fetch summary.');
-      working = false;
-    }
-  });
-
-  //----------------------------------------------------------------------------
-  // powers the doc hint in the textarea
-  //----------------------------------------------------------------------------
-  const textarea = document.getElementById("extra-instructions");
-  const hint = "Please summarize this web page.";
-
-  textarea.value = hint;
-
-  textarea.addEventListener("focus", () => {
-    if (textarea.value === hint) {
-      textarea.value = "";
-      textarea.classList.remove("hint");
+      default:
+        reportError('Failed to fetch summary.');
+        working = false;
+        break;
     }
   });
-
-  textarea.addEventListener("blur", () => {
-    if (textarea.value === "") {
-      textarea.value = hint;
-      textarea.classList.add("hint");
-    }
-  });
-
-  function getExtraInstructions() {
-    return textarea.value;
-  }
 });

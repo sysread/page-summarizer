@@ -27,10 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const debug         = !!document.getElementById("debug").checked;
 
     chrome.storage.sync.set({ apiKey, model, customPrompts, debug }, () => {
-      document.getElementById("status").textContent = "Settings saved.";
+      document.getElementById("status").textContent   = "Settings saved.";
       document.getElementById("status").style.display = "block";
-
-      console.log("Settings saved.", { apiKey, model, customPrompts, debug });
     });
   });
 });

@@ -22,8 +22,8 @@
       "matches": ["<all_urls>"],
       "js": [
         "assets/marked.min.js",
-        "src/summarize_selection.js",
-        "src/form_fill.js"
+        "src/scripts/selection_summarizer.js",
+        "src/scripts/form_filler.js"
       ]
     }
   ],
@@ -36,7 +36,8 @@
     }
   },
   "background": {
-    "service_worker": "src/background.js"
+    "service_worker": "src/background.js",
+    "type": "module"
   },
   "options_page": "src/config.html"
 }

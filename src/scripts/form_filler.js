@@ -163,23 +163,28 @@ if (chrome && chrome.runtime) {
       if (msg == null) {
         return;
       }
-      else if (msg.action == "displayOverlay") {
-        target = document.activeElement;
-        displayOverlay();
-      }
-      else if (msg.action == "recvCompletion") {
-        if (msg.done) {
-          target = null;
 
-          if (msg.error != null) {
-            reportError(msg.error);
-          }
+      switch (msg.action) {
+        case 'displayOverlay':
+          target = document.activeElement;
+          displayOverlay();
+          break;
 
-          return;
-        }
-        else if (msg.summary != null && msg.summary.length > 0) {
+        case 'gptMessage':
           updateTarget(msg.summary);
-        }
+          break;
+
+        case 'gptDone':
+          target = null;
+          break;
+
+        case 'gptError':
+          reportError(msg.error);
+          break;
+
+        default:
+          reportError('Failed to fetch summary.');
+          break;
       }
     });
   });

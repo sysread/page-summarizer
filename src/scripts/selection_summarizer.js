@@ -80,18 +80,21 @@ if (chrome && chrome.runtime) {
         return;
       }
 
-      if (msg.done) {
-        if (msg.error != null) {
+      switch (msg.action) {
+        case 'gptMessage':
+          updateSummary(marked.marked(msg.summary));
+          break;
+
+        case 'gptDone':
+          break;
+
+        case 'gptError':
           reportError(msg.error);
-        }
+          break;
 
-        return;
-      }
-
-      if (msg.summary != null && msg.summary.length > 0) {
-        updateSummary(marked.marked(msg.summary));
-      } else {
-        reportError('Failed to fetch summary.');
+        default:
+          reportError('Failed to fetch summary.');
+          break;
       }
     });
   });
