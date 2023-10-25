@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.tabs.query({active: true, currentWindow: true})
       .then((tabs) => {
         port.postMessage({
-          action: 'summarize',
+          action: 'SUMMARIZE',
           tabId:  tabs[0].id,
           extra:  extra.value
         });
@@ -97,17 +97,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     switch (msg.action) {
-      case 'gptMessage':
+      case 'GPT_MESSAGE':
         updateSummary(marked.marked(msg.summary));
         break;
 
-      case 'gptDone':
+      case 'GPT_DONE':
         updateSummary(marked.marked(msg.summary));
         setSummary(msg.summary);
         working = false;
         break;
 
-      case 'gptError':
+      case 'GPT_ERROR':
         reportError(msg.error);
         working = false;
         break;

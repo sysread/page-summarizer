@@ -81,14 +81,14 @@ if (chrome && chrome.runtime) {
       }
 
       switch (msg.action) {
-        case 'gptMessage':
+        case 'GPT_MESSAGE':
           updateSummary(marked.marked(msg.summary));
           break;
 
-        case 'gptDone':
+        case 'GPT_DONE':
           break;
 
-        case 'gptError':
+        case 'GPT_ERROR':
           reportError(msg.error);
           break;
 

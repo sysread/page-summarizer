@@ -115,15 +115,15 @@ async function fetchCompletions(apiKey, payload) {
 }
 
 function gptError(port, error) {
-  port.postMessage({action: 'gptError', error: error});
+  port.postMessage({action: 'GPT_ERROR', error: error});
 }
 
 function gptMessage(port, summary) {
-  port.postMessage({action: 'gptMessage', summary: summary});
+  port.postMessage({action: 'GPT_MESSAGE', summary: summary});
 }
 
 function gptDone(port, summary) {
-  port.postMessage({action: 'gptDone', summary: summary});
+  port.postMessage({action: 'GPT_DONE', summary: summary});
 }
 
 //------------------------------------------------------------------------------

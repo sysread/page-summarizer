@@ -28,10 +28,10 @@ export function connectFormFiller() {
   chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId == 'fillForm') {
       const port = chrome.tabs.connect(tab.id, {name: 'fillForm'});
-      port.postMessage({action: 'displayOverlay'});
+      port.postMessage({action: 'DISPLAY_OVERLAY'});
 
       port.onMessage.addListener((msg) => {
-        if (msg.action == 'getCompletion') {
+        if (msg.action == 'GET_COMPLETION') {
           fetchAndStreamFormFill(port, msg.text, msg.extra);
         }
       });

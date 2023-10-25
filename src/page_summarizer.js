@@ -28,9 +28,9 @@ export async function fetchAndStreamSummary(port, content, extra) {
 
 export function connectPageSummarizer() {
   chrome.runtime.onConnect.addListener((port) => {
-    if (port.name == "summarize") {
+    if (port.name == 'summarize') {
       port.onMessage.addListener((msg) => {
-        if (msg.action == "summarize") {
+        if (msg.action == 'SUMMARIZE') {
           const tabId = msg.tabId;
           const extra = msg.extra;
 

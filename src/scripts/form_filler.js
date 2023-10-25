@@ -113,7 +113,7 @@ if (chrome && chrome.runtime) {
 
         if (instructions != null && instructions.length > 0) {
           port.postMessage({
-            action: 'getCompletion',
+            action: 'GET_COMPLETION',
             text:   instructions,
             extra:  contents
           });
@@ -165,20 +165,20 @@ if (chrome && chrome.runtime) {
       }
 
       switch (msg.action) {
-        case 'displayOverlay':
+        case 'DISPLAY_OVERLAY':
           target = document.activeElement;
           displayOverlay();
           break;
 
-        case 'gptMessage':
+        case 'GPT_MESSAGE':
           updateTarget(msg.summary);
           break;
 
-        case 'gptDone':
+        case 'GPT_DONE':
           target = null;
           break;
 
-        case 'gptError':
+        case 'GPT_ERROR':
           reportError(msg.error);
           break;
 
