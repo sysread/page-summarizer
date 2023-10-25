@@ -28,7 +28,7 @@
     }
   ],
   "action": {
-    "default_popup": "src/popup.html",
+    "default_popup": "src/pages/popup.html",
     "default_icon": {
       "16": "assets/icon_16.png",
       "48": "assets/icon_48.png",
@@ -39,5 +39,5 @@
     "service_worker": "src/background.js",
     "type": "module"
   },
-  "options_page": "src/config.html"
+  "options_page": "src/pages/config.html"
 }
