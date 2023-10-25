@@ -8,6 +8,7 @@ summarize, click the extension icon, and get a concise summary.
 
 - Summarize the content of any web page
 - Summarize the contents of selected text
+- Fill in text with GPT
 - Customize instructions to get the information you want
 - Add persistent custom instructions for all summaries
 - Uses the OpenAI conversations API
