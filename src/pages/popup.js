@@ -24,36 +24,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  function restoreSummary() {
-    return new Promise((resolve, _reject) => {
-      chrome.tabs.query({active: true, currentWindow: true})
-        .then((tabs) => {
-          const url = tabs[0].url;
+  async function restoreSummary() {
+    const tabs   = await chrome.tabs.query({active: true, currentWindow: true});
+    const url    = tabs[0].url;
+    const config = await chrome.storage.local.get('results');
 
-          chrome.storage.local.get('results')
-            .then((data) => {
-              if (data.results && data.results[url]) {
-                resolve(data.results[url]);
-              } else {
-                resolve(null);
-              }
-            });
-        });
-    });
+    if (config.results && config.results[url]) {
+      return config.results[url];
+    } else {
+      return null;
+    }
   }
 
-  function setSummary(summary) {
-    chrome.tabs.query({active: true, currentWindow: true})
-      .then((tabs) => {
-        const url = tabs[0].url;
+  async function setSummary(summary) {
+    const tabs   = await chrome.tabs.query({active: true, currentWindow: true});
+    const url    = tabs[0].url;
+    const config = await chrome.storage.local.get('results');
 
-        chrome.storage.local.get('results')
-          .then((data) => {
-            let results = data.results || {};
-            results[url] = summary;
-            chrome.storage.local.set({results: results});
-          });
-      });
+    let results  = config.results || {};
+    results[url] = summary;
+    chrome.storage.local.set({results: results});
   }
 
   function updateSummary(message) {

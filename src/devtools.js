@@ -41,13 +41,10 @@ export function connectScriptReloader() {
 //------------------------------------------------------------------------------
 // If the user has enabled debug mode, log to the console
 //------------------------------------------------------------------------------
-export function debug() {
-  const args = arguments;
+export async function debug() {
+  const config = await chrome.storage.sync.get(['debug']);
 
-  chrome.storage.sync.get(['debug'])
-    .then((config) => {
-      if (config.debug) {
-        console.log(...args);
-      }
-    });
+  if (config.debug) {
+    console.log(...arguments);
+  }
 }
