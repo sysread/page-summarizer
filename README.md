@@ -1,8 +1,8 @@
 # Page Summarizer
 
-Page Summarizer is a Chrome extension that utilizes OpenAI's GPT-3 API to
-summarize text from a web page. Just highlight the text you want to summarize,
-click the extension icon, and get a concise summary!
+Page Summarizer is a Chrome extension that utilizes OpenAI's chat completions
+API to summarize text from a web page. Just highlight the text you want to
+summarize, click the extension icon, and get a concise summary.
 
 ## Features
 
