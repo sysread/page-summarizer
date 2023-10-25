@@ -1,29 +1,6 @@
 import { debug } from './devtools.js';
 
-function gptError(port, error) {
-  port.postMessage({action: 'gptError', error: error});
-}
-
-function gptMessage(port, summary) {
-  port.postMessage({action: 'gptMessage', summary: summary});
-}
-
-function gptDone(port, summary) {
-  port.postMessage({action: 'gptDone', summary: summary});
-}
-
-async function fetchCompletions(apiKey, payload) {
-  const headers = {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${apiKey}`
-  };
-
-  return fetch("https://api.openai.com/v1/chat/completions", {
-    method:  "POST",
-    headers: headers,
-    body:    JSON.stringify(payload)
-  });
-}
+const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 class GptResponseReader {
   constructor(response) {
@@ -32,8 +9,12 @@ class GptResponseReader {
   }
 
   async next() {
-    const {value: chunk, done: readerDone} = await this.reader.read();
+    return this.reader
+      .read()
+      .then(this.parseChunk.bind(this))
+  }
 
+  parseChunk({value: chunk, done: readerDone}) {
     if (readerDone) {
       return this.result(true);
     }
@@ -96,6 +77,31 @@ class GptResponseReader {
   [Symbol.asyncIterator]() {
     return this;
   }
+}
+
+async function fetchCompletions(apiKey, payload) {
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${apiKey}`
+  };
+
+  return fetch(ENDPOINT, {
+    method:  "POST",
+    headers: headers,
+    body:    JSON.stringify(payload)
+  });
+}
+
+function gptError(port, error) {
+  port.postMessage({action: 'gptError', error: error});
+}
+
+function gptMessage(port, summary) {
+  port.postMessage({action: 'gptMessage', summary: summary});
+}
+
+function gptDone(port, summary) {
+  port.postMessage({action: 'gptDone', summary: summary});
 }
 
 //------------------------------------------------------------------------------
