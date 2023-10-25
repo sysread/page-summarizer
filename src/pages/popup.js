@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateSummary(message) {
     target.innerHTML = message;
+
+    // Autoscroll to the bottom of the page
+    window.scrollTo(0, document.body.scrollHeight);
   }
 
   function reportError(message) {
