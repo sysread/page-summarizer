@@ -9,9 +9,6 @@
     "scripting",
     "contextMenus"
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
   "icons": {
     "16": "assets/icon_16.png",
     "48": "assets/icon_48.png",
