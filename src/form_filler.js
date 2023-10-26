@@ -1,5 +1,5 @@
 import { fetchAndStream } from './gpt.js';
-import { setupContentScript } from './util.js';
+import { loadSupportScripts } from './util.js';
 
 async function fetchAndStreamFormFill(port, prompt, extra) {
   let messages = [

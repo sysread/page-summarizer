@@ -1,5 +1,5 @@
 import { fetchAndStreamSummary } from './page_summarizer.js';
-import { setupContentScript } from './util.js';
+import { loadSupportScripts } from './util.js';
 
 export async function connectSelectionSummarizer() {
   // Add the context menu item to summarize selected text
