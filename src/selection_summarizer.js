@@ -14,7 +14,7 @@ export async function connectSelectionSummarizer() {
   // Listen for clicks on the context menu item
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'summarizeSelectedText') {
-      await setupContentScript({id: tab.id}, [
+      await loadSupportScripts({id: tab.id}, [
         'assets/marked.min.js',
         'src/scripts/selection_summarizer.js'
       ]);

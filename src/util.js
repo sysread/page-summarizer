@@ -1,4 +1,7 @@
-export async function setupContentScript(tab, scripts) {
+//------------------------------------------------------------------------------
+// Execute support scripts
+//------------------------------------------------------------------------------
+export async function loadSupportScripts(tab, scripts) {
   return chrome.scripting.executeScript({
     target: {tabId: tab.id},
     files: scripts

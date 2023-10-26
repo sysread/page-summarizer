@@ -28,7 +28,7 @@ export function connectFormFiller() {
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'fillForm') {
-      await setupContentScript({id: tab.id}, [
+      await loadSupportScripts({id: tab.id}, [
         'assets/marked.min.js',
         'src/scripts/form_filler.js',
       ]);
