@@ -1,4 +1,5 @@
 import { fetchAndStream } from './gpt.js';
+import { setupContentScript } from './util.js';
 
 async function fetchAndStreamFormFill(port, prompt, extra) {
   let messages = [
@@ -25,8 +26,14 @@ export function connectFormFiller() {
     });
   });
 
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'fillForm') {
+      await setupContentScript({id: tab.id}, [
+        'assets/marked.min.js',
+        'src/scripts/form_filler.js',
+      ]);
+
+
       const port = chrome.tabs.connect(tab.id, {name: 'fillForm'});
       port.postMessage({action: 'DISPLAY_OVERLAY'});
 

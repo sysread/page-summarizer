@@ -14,16 +14,6 @@
     "48": "assets/icon_48.png",
     "128": "assets/icon_128.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": [
-        "assets/marked.min.js",
-        "src/scripts/selection_summarizer.js",
-        "src/scripts/form_filler.js"
-      ]
-    }
-  ],
   "action": {
     "default_popup": "src/pages/popup.html",
     "default_icon": {

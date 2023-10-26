@@ -1,4 +1,4 @@
-import { debug } from './devtools.js';
+import { debug } from './util.js';
 
 const ENDPOINT    = 'https://api.openai.com/v1/chat/completions';
 const DATA_MARKER = 'data: ';
