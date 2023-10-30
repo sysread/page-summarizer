@@ -26,6 +26,10 @@ API key from OpenAI. This _might_ work on Firefox, but I took exactly zero
 minutes ensuring my API calls were cross platform. It does work on Opera,
 though.
 
+### Installation from the Chrome Web Store
+
+Go [here](https://chromewebstore.google.com/detail/page-summarizer/mcebcgkikhcjigekcekkicnppoldnikf).
+
 ### Installation from latest release
 
 1. Go to the [Releases](https://github.com/sysread/page-summarizer/releases) page of this repository.
