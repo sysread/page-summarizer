@@ -22,10 +22,11 @@ const ERR_API_KEY = 'Error: API key is not set';
  *----------------------------------------------------------------------------*/
 class GptResponseReader {
   constructor(response) {
-    this.reader = response.body.getReader();
-    this.buffer = "";
-    this.error  = null;
-    this.done   = false;
+    this.reader    = response.body.getReader();
+    this.buffer    = "";
+    this.error     = null;
+    this.done      = false;
+    this.lastChunk = "";
   }
 
   // Required for the async iterator protocol
@@ -74,21 +75,33 @@ class GptResponseReader {
       .split("\n")
       .filter((line) => line !== "");
 
+    debug("LINES:", lines);
+
     for (const line of lines) {
       if (line === DONE_MARKER) {
         this.finish();
         return this.sendResult();
       }
       else if (line.startsWith("data: ")) {
-        const data = JSON.parse(line.substring(6));
+        const json = this.lastChunk + line.substring(6);
 
-        if (data.error) {
-          this.setError(data.error.message);
-          return this.sendResult();
+        let data = null;
+
+        try {
+          data = JSON.parse(json);
+        } catch (error) {
+          this.lastChunk = json;
         }
 
-        if (data.choices[0].delta.content) {
-          this.append(data.choices[0].delta.content);
+        if (data !== null) {
+          if (data.error) {
+            this.setError(data.error.message);
+            return this.sendResult();
+          }
+
+          if (data.choices[0].delta.content) {
+            this.append(data.choices[0].delta.content);
+          }
         }
       }
     }

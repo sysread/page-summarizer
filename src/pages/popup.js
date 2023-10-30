@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return "Received empty string";
     }
 
-    marked.marked(text);
+    return marked.marked(text);
   }
 
   async function restoreSummary() {
