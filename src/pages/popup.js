@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  function format(text) {
+    if (text == null || text.length == 0) {
+      return "Received empty string";
+    }
+
+    marked.marked(text);
+  }
+
   async function restoreSummary() {
     const tabs   = await chrome.tabs.query({active: true, currentWindow: true});
     const url    = tabs[0].url;
@@ -57,17 +65,15 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSummary(`<span style="color: red; font-style: italic;">Error: ${message}</span>`);
   }
 
-  function requestNewSummary() {
-    chrome.tabs.query({active: true, currentWindow: true})
-      .then((tabs) => {
-        port.postMessage({
-          action: 'SUMMARIZE',
-          tabId:  tabs[0].id,
-          extra:  extra.value
-        });
-      });
-  }
+  async function requestNewSummary() {
+    tabs = await chrome.tabs.query({active: true, currentWindow: true});
 
+    port.postMessage({
+      action: 'SUMMARIZE',
+      tabId:  tabs[0].id,
+      extra:  extra.value
+    });
+  }
 
   // Restore the last page summary when the popup is opened
   restoreSummary().then((summary) => {
@@ -91,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Set up the port message listener
+  let lastMessage = null;
+
   port.onMessage.addListener(function(msg) {
     if (msg == null) {
       return;
@@ -98,12 +106,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     switch (msg.action) {
       case 'GPT_MESSAGE':
-        updateSummary(marked.marked(msg.summary));
+        lastMessage = msg.summary;
+        updateSummary(format(msg.summary));
         break;
 
       case 'GPT_DONE':
-        updateSummary(marked.marked(msg.summary));
-        setSummary(msg.summary);
+        setSummary(lastMessage);
         working = false;
         break;
 

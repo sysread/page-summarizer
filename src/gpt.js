@@ -24,6 +24,8 @@ class GptResponseReader {
   constructor(response) {
     this.reader = response.body.getReader();
     this.buffer = "";
+    this.error  = null;
+    this.done   = false;
   }
 
   // Required for the async iterator protocol
@@ -33,50 +35,56 @@ class GptResponseReader {
 
   // Required for the async iterator protocol
   async next() {
+    if (this.done) {
+      return {done: true};
+    }
+
     const {value: chunk, done: readerDone} = await this.reader.read();
 
     if (readerDone) {
-      return this.result(true);
+      this.finish();
+      return this.sendResult();
     }
 
     return this.parseChunk(chunk);
   }
 
   parseChunk(chunk) {
+    const string = new TextDecoder().decode(chunk);
+
+    debug("RECV:", string);
+
     // Some errors are returned as the initial message, but they can be
     // multi-line, so we have to attempt to parse them here to see if
     // they are an error. If the chunk cannot be parsed as JSON, then it
     // is a normal message chunk.
     try {
-      const data = JSON.parse(new TextDecoder().decode(chunk));
+      const data = JSON.parse(string);
 
       if (data.error) {
-        this.reader.releaseLock();
-        return this.error(data.error.message);
+        this.setError(data.error.message);
+        return this.sendResult();
       }
     }
     catch (error) {
       ; // do nothing
     }
 
-    const lines = new TextDecoder()
-      .decode(chunk)
+    const lines = string
       .split("\n")
       .filter((line) => line !== "");
 
-    debug("RECV:", lines);
-
     for (const line of lines) {
       if (line === DONE_MARKER) {
-        this.reader.releaseLock();
-        return this.result(true);
+        this.finish();
+        return this.sendResult();
       }
       else if (line.startsWith("data: ")) {
         const data = JSON.parse(line.substring(6));
 
         if (data.error) {
-          this.reader.releaseLock();
-          return this.error(data.error.message);
+          this.setError(data.error.message);
+          return this.sendResult();
         }
 
         if (data.choices[0].delta.content) {
@@ -85,19 +93,28 @@ class GptResponseReader {
       }
     }
 
-    return this.result(false);
+    return this.sendResult();
   }
 
   append(data) {
     this.buffer += data;
   }
 
-  result(done) {
-    return {done: done, value: {data: this.buffer, error: null}};
+  sendResult() {
+    debug("RESULT:", {data: this.buffer, error: this.error});
+    return {done: false, value: {data: this.buffer, error: this.error}};
   }
 
-  error(error) {
-    return {done: true, value: {data: null, error: error}};
+  setError(error) {
+    debug("ERROR:", error);
+    this.error = error;
+    this.finish();
+  }
+
+  finish() {
+    debug("FINISH");
+    this.done = true;
+    this.reader.releaseLock();
   }
 }
 
@@ -152,7 +169,11 @@ export async function fetchAndStream(port, messages) {
     const reader    = new GptResponseReader(response);
     let lastMessage = null;
 
-    for await (const {data: data, error: error} of reader) {
+    for await (const message of reader) {
+      debug("MSG:", message);
+
+      const {data: data, error: error} = message;
+
       if (error !== null) {
         gptError(port, error);
       }
