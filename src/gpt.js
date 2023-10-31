@@ -54,7 +54,7 @@ function GptResponseReader(response) {
 
   return async function () {
     if (done) {
-      return { data: buffer, error: error };
+      return null;
     }
 
     const { value: chunk, done: readerDone } = await reader.read();
@@ -92,7 +92,9 @@ function GptResponseReader(response) {
       if (line === DONE_MARKER) {
         done = true;
         return { data: buffer, error: error };
-      } else if (line.startsWith('data: ')) {
+      }
+
+      if (line.startsWith('data: ')) {
         const data = json_buffer(line.substring(6));
 
         if (data !== null) {
@@ -187,8 +189,7 @@ export async function fetchAndStream(port, messages) {
     if (error === PORT_CLOSED) {
       return;
     } else {
-      console.trace('ERROR', error);
-      //console.error(error);
+      console.error(error);
     }
   }
 }
