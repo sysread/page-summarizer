@@ -1,6 +1,6 @@
-import { connectPageSummarizer      } from './page_summarizer.js';
+import { connectPageSummarizer } from './page_summarizer.js';
 import { connectSelectionSummarizer } from './selection_summarizer.js';
-import { connectFormFiller          } from './form_filler.js';
+import { connectFormFiller } from './form_filler.js';
 
 // Summarize page
 connectPageSummarizer();

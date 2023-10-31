@@ -1,6 +1,6 @@
 import { debug } from './util.js';
 
-const ENDPOINT    = 'https://api.openai.com/v1/chat/completions';
+const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const DATA_MARKER = 'data: ';
 const DONE_MARKER = `${DATA_MARKER}[DONE]`;
 const PORT_CLOSED = 'Error: Attempting to use a disconnected port object';
@@ -22,11 +22,11 @@ const ERR_API_KEY = 'Error: API key is not set';
  *----------------------------------------------------------------------------*/
 class GptResponseReader {
   constructor(response) {
-    this.reader    = response.body.getReader();
-    this.buffer    = "";
-    this.error     = null;
-    this.done      = false;
-    this.lastChunk = "";
+    this.reader = response.body.getReader();
+    this.buffer = '';
+    this.error = null;
+    this.done = false;
+    this.lastChunk = '';
   }
 
   // Required for the async iterator protocol
@@ -37,10 +37,10 @@ class GptResponseReader {
   // Required for the async iterator protocol
   async next() {
     if (this.done) {
-      return {done: true};
+      return { done: true };
     }
 
-    const {value: chunk, done: readerDone} = await this.reader.read();
+    const { value: chunk, done: readerDone } = await this.reader.read();
 
     if (readerDone) {
       this.finish();
@@ -53,7 +53,7 @@ class GptResponseReader {
   parseChunk(chunk) {
     const string = new TextDecoder().decode(chunk);
 
-    debug("RECV:", string);
+    debug('RECV:', string);
 
     // Some errors are returned as the initial message, but they can be
     // multi-line, so we have to attempt to parse them here to see if
@@ -66,23 +66,19 @@ class GptResponseReader {
         this.setError(data.error.message);
         return this.sendResult();
       }
-    }
-    catch (error) {
-      ; // do nothing
+    } catch (error) {
+      // do nothing
     }
 
-    const lines = string
-      .split("\n")
-      .filter((line) => line !== "");
+    const lines = string.split('\n').filter((line) => line !== '');
 
-    debug("LINES:", lines);
+    debug('LINES:', lines);
 
     for (const line of lines) {
       if (line === DONE_MARKER) {
         this.finish();
         return this.sendResult();
-      }
-      else if (line.startsWith("data: ")) {
+      } else if (line.startsWith('data: ')) {
         const json = this.lastChunk + line.substring(6);
 
         let data = null;
@@ -114,18 +110,18 @@ class GptResponseReader {
   }
 
   sendResult() {
-    debug("RESULT:", {data: this.buffer, error: this.error});
-    return {done: false, value: {data: this.buffer, error: this.error}};
+    debug('RESULT:', { data: this.buffer, error: this.error });
+    return { done: false, value: { data: this.buffer, error: this.error } };
   }
 
   setError(error) {
-    debug("ERROR:", error);
+    debug('ERROR:', error);
     this.error = error;
     this.finish();
   }
 
   finish() {
-    debug("FINISH");
+    debug('FINISH');
     this.done = true;
     this.reader.releaseLock();
   }
@@ -133,27 +129,27 @@ class GptResponseReader {
 
 async function fetchCompletions(apiKey, payload) {
   const headers = {
-    "Content-Type":  "application/json",
-    "Authorization": `Bearer ${apiKey}`
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${apiKey}`,
   };
 
   return fetch(ENDPOINT, {
-    method:  "POST",
+    method: 'POST',
     headers: headers,
-    body:    JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 }
 
 function gptError(port, error) {
-  port.postMessage({action: 'GPT_ERROR', error: error});
+  port.postMessage({ action: 'GPT_ERROR', error: error });
 }
 
 function gptMessage(port, summary) {
-  port.postMessage({action: 'GPT_MESSAGE', summary: summary});
+  port.postMessage({ action: 'GPT_MESSAGE', summary: summary });
 }
 
 function gptDone(port, summary) {
-  port.postMessage({action: 'GPT_DONE', summary: summary});
+  port.postMessage({ action: 'GPT_DONE', summary: summary });
 }
 
 //------------------------------------------------------------------------------
@@ -169,36 +165,34 @@ export async function fetchAndStream(port, messages) {
     return;
   }
 
-  debug("PROMPT:", messages);
+  debug('PROMPT:', messages);
 
   try {
     const payload = {
-      model:    config.model,
+      model: config.model,
       messages: messages,
-      stream:   true
+      stream: true,
     };
 
-    const response  = await fetchCompletions(config.apiKey, payload);
-    const reader    = new GptResponseReader(response);
+    const response = await fetchCompletions(config.apiKey, payload);
+    const reader = new GptResponseReader(response);
     let lastMessage = null;
 
     for await (const message of reader) {
-      debug("MSG:", message);
+      debug('MSG:', message);
 
-      const {data: data, error: error} = message;
+      const { data: data, error: error } = message;
 
       if (error !== null) {
         gptError(port, error);
-      }
-      else if (data !== null) {
+      } else if (data !== null) {
         gptMessage(port, data);
         lastMessage = data;
       }
     }
 
     gptDone(port, lastMessage);
-  }
-  catch (error) {
+  } catch (error) {
     if (error === PORT_CLOSED) {
       return;
     } else {

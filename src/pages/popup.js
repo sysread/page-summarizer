@@ -1,40 +1,40 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const port   = chrome.runtime.connect({name: "summarize"});
+  const port = chrome.runtime.connect({ name: 'summarize' });
   const target = document.getElementById('summary');
 
   //----------------------------------------------------------------------------
   // powers the doc hint in the extra instructions text area
   //----------------------------------------------------------------------------
-  const extra = document.getElementById("extra-instructions");
-  const hint = "Please summarize this web page.";
+  const extra = document.getElementById('extra-instructions');
+  const hint = 'Please summarize this web page.';
 
   extra.value = hint;
 
-  extra.addEventListener("focus", () => {
+  extra.addEventListener('focus', () => {
     if (extra.value == hint) {
-      extra.value = "";
-      extra.classList.remove("hint");
+      extra.value = '';
+      extra.classList.remove('hint');
     }
   });
 
-  extra.addEventListener("blur", () => {
-    if (extra.value == "") {
+  extra.addEventListener('blur', () => {
+    if (extra.value == '') {
       extra.value = hint;
-      extra.classList.add("hint");
+      extra.classList.add('hint');
     }
   });
 
   function format(text) {
     if (text == null || text.length == 0) {
-      return "Received empty string";
+      return 'Received empty string';
     }
 
     return marked.marked(text);
   }
 
   async function restoreSummary() {
-    const tabs   = await chrome.tabs.query({active: true, currentWindow: true});
-    const url    = tabs[0].url;
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = tabs[0].url;
     const config = await chrome.storage.local.get('results');
 
     if (config.results && config.results[url]) {
@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function setSummary(summary) {
-    const tabs   = await chrome.tabs.query({active: true, currentWindow: true});
-    const url    = tabs[0].url;
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = tabs[0].url;
     const config = await chrome.storage.local.get('results');
 
-    let results  = config.results || {};
+    let results = config.results || {};
     results[url] = summary;
-    chrome.storage.local.set({results: results});
+    chrome.storage.local.set({ results: results });
   }
 
   function updateSummary(message) {
@@ -66,12 +66,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function requestNewSummary() {
-    tabs = await chrome.tabs.query({active: true, currentWindow: true});
+    tabs = await chrome.tabs.query({ active: true, currentWindow: true });
 
     port.postMessage({
       action: 'SUMMARIZE',
-      tabId:  tabs[0].id,
-      extra:  extra.value
+      tabId: tabs[0].id,
+      extra: extra.value,
     });
   }
 
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Set up the port message listener
   let lastMessage = null;
 
-  port.onMessage.addListener(function(msg) {
+  port.onMessage.addListener(function (msg) {
     if (msg == null) {
       return;
     }

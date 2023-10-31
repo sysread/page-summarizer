@@ -7,21 +7,18 @@ export async function connectSelectionSummarizer() {
     chrome.contextMenus.create({
       id: 'summarizeSelectedText',
       title: 'Summarize selection',
-      contexts: ['selection']
+      contexts: ['selection'],
     });
   });
 
   // Listen for clicks on the context menu item
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'summarizeSelectedText') {
-      await loadSupportScripts({id: tab.id}, [
-        'assets/marked.min.js',
-        'src/scripts/selection_summarizer.js'
-      ]);
+      await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/selection_summarizer.js']);
 
       const text = info.selectionText;
-      const port = chrome.tabs.connect(tab.id, {name: 'contentScriptPort'});
-      fetchAndStreamSummary(port, text, "");
+      const port = chrome.tabs.connect(tab.id, { name: 'contentScriptPort' });
+      fetchAndStreamSummary(port, text, '');
     }
   });
 }

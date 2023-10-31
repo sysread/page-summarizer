@@ -1,22 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Configurations</title>
 
-    <style>
-    #status {
-      display: none;
-      padding: 1em;
-      margin: 1em 0em;
-      font-style: italic;
-      background-color: rgb(40, 167, 69);
-      color: white;
-      border-radius: 5px;
-    }
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    textarea {
-      width: 50%;
-    }
+    <style>
+      #status {
+        display: none;
+        padding: 1em;
+        margin: 1em 0em;
+        font-style: italic;
+        background-color: rgb(40, 167, 69);
+        color: white;
+        border-radius: 5px;
+      }
+
+      textarea {
+        width: 80%;
+      }
     </style>
   </head>
   <body>
@@ -26,22 +28,22 @@
 
     <form id="config-form">
       <label for="apiKey">OpenAI API Key:</label>
-      <input type="text" id="apiKey" name="apiKey"><br><br>
+      <input type="text" id="apiKey" name="apiKey" /><br /><br />
 
       <label for="model">Select model:</label>
       <select id="model" name="model">
         <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
         <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
-        <option value="gpt-4">GPT-4</option>
-      </select><br><br>
+        <option value="gpt-4">GPT-4</option></select
+      ><br /><br />
 
-      <label for="customPrompts">Custom Prompts (One per line):</label><br>
-      <textarea id="customPrompts" name="customPrompts" rows="4" cols="50"></textarea><br><br>
+      <label for="customPrompts">Custom Prompts (One per line):</label><br />
+      <textarea id="customPrompts" name="customPrompts" rows="4" cols="50"></textarea><br /><br />
 
       <label for="debug">Debug Mode:</label>
-      <input type="checkbox" id="debug" name="debug"><br><br>
+      <input type="checkbox" id="debug" name="debug" /><br /><br />
 
-      <input type="submit" value="Save">
+      <input type="submit" value="Save" />
     </form>
 
     <script src="config.js"></script>

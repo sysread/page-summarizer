@@ -3,9 +3,9 @@
 //------------------------------------------------------------------------------
 export async function loadSupportScripts(tab, scripts) {
   return chrome.scripting.executeScript({
-    target: {tabId: tab.id},
-    files: scripts
-  })
+    target: { tabId: tab.id },
+    files: scripts,
+  });
 }
 
 //------------------------------------------------------------------------------

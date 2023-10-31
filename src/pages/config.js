@@ -1,34 +1,33 @@
-document.addEventListener("DOMContentLoaded", () => {
-  chrome.storage.sync.get(["apiKey", "model", "customPrompts", "debug"], (result) => {
-    if (result.apiKey) {
-      document.getElementById("apiKey").value = result.apiKey;
-    }
+document.addEventListener('DOMContentLoaded', async () => {
+  const config = await chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug']);
 
-    if (result.model) {
-      document.getElementById("model").value = result.model;
-    }
+  if (config.apiKey) {
+    document.getElementById('apiKey').value = config.apiKey;
+  }
 
-    if (result.customPrompts) {
-      document.getElementById("customPrompts").value = result.customPrompts.join("\n");
-    }
+  if (config.model) {
+    document.getElementById('model').value = config.model;
+  }
 
-    if (result.debug) {
-      document.getElementById("debug").checked = !!result.debug;
-    }
-  });
+  if (config.customPrompts) {
+    document.getElementById('customPrompts').value = config.customPrompts.join('\n');
+  }
 
-  document.getElementById("config-form").addEventListener("submit", (e) => {
+  if (config.debug) {
+    document.getElementById('debug').checked = !!config.debug;
+  }
+
+  document.getElementById('config-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    document.getElementById("status").style.display = "none";
+    document.getElementById('status').style.display = 'none';
 
-    const apiKey        = document.getElementById("apiKey").value;
-    const model         = document.getElementById("model").value;
-    const customPrompts = document.getElementById("customPrompts").value.split("\n");
-    const debug         = !!document.getElementById("debug").checked;
+    const apiKey = document.getElementById('apiKey').value;
+    const model = document.getElementById('model').value;
+    const customPrompts = document.getElementById('customPrompts').value.split('\n');
+    const debug = !!document.getElementById('debug').checked;
 
-    chrome.storage.sync.set({ apiKey, model, customPrompts, debug }, () => {
-      document.getElementById("status").textContent   = "Settings saved.";
-      document.getElementById("status").style.display = "block";
-    });
+    await chrome.storage.sync.set({ apiKey, model, customPrompts, debug });
+    document.getElementById('status').textContent = 'Settings saved.';
+    document.getElementById('status').style.display = 'block';
   });
 });
