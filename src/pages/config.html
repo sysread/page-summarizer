@@ -16,15 +16,26 @@
         border-radius: 5px;
       }
 
+      #close-btn {
+        float: right;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+      }
+
       textarea {
-        width: 80%;
+        width: 90%;
       }
     </style>
   </head>
   <body>
     <h1>Page summarizer settings</h1>
 
-    <div id="status"></div>
+    <div id="status">
+      <span id="status-text"></span>
+      <button id="close-btn">X</button>
+    </div>
 
     <form id="config-form">
       <label for="apiKey">OpenAI API Key:</label>

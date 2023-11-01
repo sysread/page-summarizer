@@ -17,9 +17,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('debug').checked = !!config.debug;
   }
 
+  // Listen for the close button
+  const closeButton = document.getElementById('close-btn');
+  closeButton.addEventListener('click', () => {
+    document.getElementById('status').style.display = 'none';
+  });
+
   document.getElementById('config-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    document.getElementById('status').style.display = 'none';
+    closeButton.style.display = 'none';
 
     const apiKey = document.getElementById('apiKey').value;
     const model = document.getElementById('model').value;
@@ -27,7 +33,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const debug = !!document.getElementById('debug').checked;
 
     await chrome.storage.sync.set({ apiKey, model, customPrompts, debug });
-    document.getElementById('status').textContent = 'Settings saved.';
-    document.getElementById('status').style.display = 'block';
+
+    if (document.getElementById('status').style.display === 'block') {
+      // If the status is currently showing, hide it and then show it again after a delay
+      document.getElementById('status').style.display = 'none';
+
+      setTimeout(() => {
+        document.getElementById('status-text').textContent = 'Settings saved.';
+        document.getElementById('status').style.display = 'block';
+        closeButton.style.display = 'block';
+      }, 250);
+    } else {
+      document.getElementById('status-text').textContent = 'Settings saved.';
+      document.getElementById('status').style.display = 'block';
+      closeButton.style.display = 'block';
+    }
   });
 });
