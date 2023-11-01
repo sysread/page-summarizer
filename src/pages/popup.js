@@ -24,6 +24,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  //----------------------------------------------------------------------------
+  // Autoscroll to the bottom of the page when new content is added. If the
+  // user scrolls up, disable autoscroll until they scroll back to the bottom.
+  //----------------------------------------------------------------------------
+  let autoScroll = true;
+
+  window.addEventListener('scroll', () => {
+    const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
+    autoScroll = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
+  });
+
   function format(text) {
     if (text == null || text.length == 0) {
       return 'Received empty string';
@@ -58,7 +69,9 @@ document.addEventListener('DOMContentLoaded', function () {
     target.innerHTML = message;
 
     // Autoscroll to the bottom of the page
-    window.scrollTo(0, document.body.scrollHeight);
+    if (autoScroll) {
+      window.scrollTo(0, document.body.scrollHeight);
+    }
   }
 
   function reportError(message) {
