@@ -1,26 +1,26 @@
 import { fetchAndStream } from './gpt.js';
 
 export async function fetchAndStreamSummary(port, content, extra) {
-  const config = await chrome.storage.sync.get(['customPrompts']);
-
   let messages = [
     {
       role: 'system',
       content: 'You are a browser extension that helps the user understand the contents of a web page.',
     },
+    {
+      role: 'user',
+      content: 'Web page contents: ' + content,
+    },
   ];
-
-  for (const prompt of config.customPrompts) {
-    messages.push({ role: 'user', content: prompt });
-  }
 
   if (extra != '') {
     messages.push({ role: 'user', content: extra });
   } else {
-    messages.push({ role: 'user', content: 'Summarize this text.' });
-  }
+    const config = await chrome.storage.sync.get(['customPrompts']);
 
-  messages.push({ role: 'user', content: content });
+    for (const prompt of config.customPrompts) {
+      messages.push({ role: 'user', content: prompt });
+    }
+  }
 
   return fetchAndStream(port, messages);
 }
