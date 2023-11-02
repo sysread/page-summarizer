@@ -1,5 +1,6 @@
 # 1.5 - ...soonish
 - Rendering of GPT responses is smoother and requires less CPU
+- Fix bug introduced in 1.4 causing custom instructions to be lost when undesirable
 
 # 1.4 - ...soon
 - No longer sends custom instructions from options page when overriding prompt to summarize page (increases likelihood of GPT3.5 obeying)

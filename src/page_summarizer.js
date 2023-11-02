@@ -10,11 +10,13 @@ export async function fetchAndStreamSummary(port, content, extra) {
       role: 'user',
       content: 'Web page contents: ' + content,
     },
+    {
+      role: 'user',
+      content: extra,
+    },
   ];
 
-  if (extra != '') {
-    messages.push({ role: 'user', content: extra });
-  } else {
+  if (extra === '' || extra === 'Please summarize this web page.') {
     const config = await chrome.storage.sync.get(['customPrompts']);
 
     for (const prompt of config.customPrompts) {
