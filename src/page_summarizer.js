@@ -24,6 +24,8 @@ export async function fetchAndStreamSummary(port, content, extra) {
     }
   }
 
+  messages.push({ role: 'user', content: extra });
+
   return fetchAndStream(port, messages);
 }
 
