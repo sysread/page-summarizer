@@ -18,7 +18,7 @@ jobs:
     # Build Chrome Extension
     - name: Build Chrome Extension
       run: |
-        zip -r chrome-extension.zip . -x "*.git*" "node_modules/*" "other_exclude_patterns/*"
+        zip -r chrome-extension.zip . -x "*.git*" "docs*"
 
     # Generate and push a release tag
     - name: Generate and Push Tag
