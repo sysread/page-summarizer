@@ -27,6 +27,19 @@
       textarea {
         width: 90%;
       }
+
+      select,
+      input[type='text'] {
+        width: 35%;
+      }
+
+      @media screen and (max-width: 600px) {
+        select,
+        input[type='text'] {
+          width: 90%;
+          display: block;
+        }
+      }
     </style>
   </head>
   <body>
@@ -39,9 +52,11 @@
 
     <form id="config-form">
       <label for="apiKey">OpenAI API Key:</label>
+      <br />
       <input type="text" id="apiKey" name="apiKey" /><br /><br />
 
       <label for="model">Select model:</label>
+      <br />
       <select id="model" name="model">
         <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
         <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
