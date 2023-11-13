@@ -21,11 +21,26 @@
         padding: 1em 0em;
       }
 
-      #extra-instructions {
+      #form {
         width: 90%;
+        margin-bottom: 1em;
+      }
+
+      #extra-instructions {
+        width: 100%;
         height: 50px;
         margin: 1em 0em;
         font-size: 1.2rem;
+      }
+
+      #model-cell {
+        width: 50%;
+        text-align: left;
+      }
+
+      #submit-cell {
+        width: 50%;
+        text-align: right;
       }
 
       .hint {
@@ -55,8 +70,27 @@
   <body>
     <h1>Page Summarizer</h1>
 
-    <div><textarea id="extra-instructions" class="hint"></textarea></div>
-    <div><button id="summarize">Summarize page</button></div>
+    <table id="form">
+      <tr>
+        <td colspan="2">
+          <textarea id="extra-instructions" class="hint"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td id="model-cell">
+          <select id="model" name="model">
+            <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+            <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
+          </select>
+        </td>
+
+        <td id="submit-cell">
+          <button id="summarize">Summarize page</button>
+        </td>
+      </tr>
+    </table>
 
     <div id="summary"></div>
 

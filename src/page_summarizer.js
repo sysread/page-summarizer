@@ -1,6 +1,6 @@
 import { fetchAndStream } from './gpt.js';
 
-export async function fetchAndStreamSummary(port, content, extra) {
+export async function fetchAndStreamSummary(port, content, extra, model) {
   let messages = [
     {
       role: 'system',
@@ -26,7 +26,7 @@ export async function fetchAndStreamSummary(port, content, extra) {
 
   messages.push({ role: 'user', content: extra });
 
-  return fetchAndStream(port, messages);
+  return fetchAndStream(port, messages, { model: model });
 }
 
 export function connectPageSummarizer() {
@@ -36,7 +36,7 @@ export function connectPageSummarizer() {
         if (msg.action == 'SUMMARIZE') {
           const tabId = msg.tabId;
           const extra = msg.extra;
-
+          const model = msg.model;
           const tab = await chrome.tabs.get(tabId);
 
           if (tab.url.startsWith('chrome://')) {
@@ -62,7 +62,7 @@ export function connectPageSummarizer() {
                 return;
               }
 
-              fetchAndStreamSummary(port, result[0].result, extra);
+              fetchAndStreamSummary(port, result[0].result, extra, model);
             },
           );
         }

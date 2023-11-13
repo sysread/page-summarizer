@@ -25,6 +25,21 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   //----------------------------------------------------------------------------
+  // powers the model dropdown
+  //----------------------------------------------------------------------------
+  async function setDefaultModel() {
+    const { model: storedModel } = await chrome.storage.local.get('model');
+    const modelDropdown = document.getElementById('model');
+
+    if (storedModel && modelDropdown) {
+      modelDropdown.value = storedModel;
+    }
+  }
+
+  // Set the default model on load
+  setDefaultModel();
+
+  //----------------------------------------------------------------------------
   // Autoscroll to the bottom of the page when new content is added. If the
   // user scrolls up, disable autoscroll until they scroll back to the bottom.
   //----------------------------------------------------------------------------
@@ -81,12 +96,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function requestNewSummary() {
-    tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const modelDropdown = document.getElementById('model');
+    const selectedModel = modelDropdown ? modelDropdown.value : undefined;
 
     port.postMessage({
       action: 'SUMMARIZE',
       tabId: tabs[0].id,
       extra: extra.value,
+      model: selectedModel,
     });
   }
 

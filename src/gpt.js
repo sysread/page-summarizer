@@ -144,7 +144,7 @@ function gptDone(port, summary) {
 // completions endpoint. It then streams the responses back to the
 // caller-supplied port.
 //------------------------------------------------------------------------------
-export async function fetchAndStream(port, messages) {
+export async function fetchAndStream(port, messages, options = {}) {
   const config = await chrome.storage.sync.get(['apiKey', 'model']);
 
   if (config.apiKey === null || config.apiKey.length === 0) {
@@ -156,7 +156,7 @@ export async function fetchAndStream(port, messages) {
 
   try {
     const payload = {
-      model: config.model,
+      model: options.model || config.model,
       messages: messages,
       stream: true,
     };
