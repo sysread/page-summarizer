@@ -1,3 +1,6 @@
+# 1.6
+- User can now override configured model from the popup
+
 # 1.5
 - Rendering of GPT responses is smoother and requires less CPU
 - Fix bug introduced in 1.4 causing custom instructions to be lost when undesirable
