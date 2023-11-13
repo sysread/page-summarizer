@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   const port = chrome.runtime.connect({ name: 'summarize' });
   const target = document.getElementById('summary');
+  const modelDropdown = document.getElementById('model');
 
   //----------------------------------------------------------------------------
   // powers the doc hint in the extra instructions text area
@@ -27,17 +28,28 @@ document.addEventListener('DOMContentLoaded', function () {
   //----------------------------------------------------------------------------
   // powers the model dropdown
   //----------------------------------------------------------------------------
-  async function setDefaultModel() {
-    const { model: storedModel } = await chrome.storage.local.get('model');
-    const modelDropdown = document.getElementById('model');
+  async function setModel(model = null) {
+    if (model == null) {
+      const config = await chrome.storage.sync.get(['model']);
+      modelDropdown.value = config.model;
+    } else {
+      modelDropdown.value = model;
+    }
+  }
 
-    if (storedModel && modelDropdown) {
-      modelDropdown.value = storedModel;
+  async function getModel() {
+    const selectedModel = modelDropdown ? modelDropdown.value : undefined;
+
+    if (selectedModel) {
+      return selectedModel;
+    } else {
+      const config = await chrome.storage.local.get(['model']);
+      return config.model;
     }
   }
 
   // Set the default model on load
-  setDefaultModel();
+  setModel();
 
   //----------------------------------------------------------------------------
   // Autoscroll to the bottom of the page when new content is added. If the
@@ -64,19 +76,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const config = await chrome.storage.local.get('results');
 
     if (config.results && config.results[url]) {
-      return config.results[url];
+      const result = config.results[url];
+
+      // Check if the result is a string (old format) or an object (new format)
+      if (typeof result === 'string') {
+        return { summary: result, model: config.model }; // Convert to new format for consistency
+      }
+
+      // It's already in the new format (object with model and summary)
+      return result;
     } else {
       return null;
     }
   }
 
-  async function setSummary(summary) {
+  async function setSummary(summary, model) {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tabs[0].url;
     const config = await chrome.storage.local.get('results');
 
     let results = config.results || {};
-    results[url] = summary;
+    results[url] = { model: model, summary: summary };
     chrome.storage.local.set({ results: results });
   }
 
@@ -97,21 +117,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function requestNewSummary() {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const modelDropdown = document.getElementById('model');
-    const selectedModel = modelDropdown ? modelDropdown.value : undefined;
+    const model = await getModel();
 
     port.postMessage({
       action: 'SUMMARIZE',
       tabId: tabs[0].id,
       extra: extra.value,
-      model: selectedModel,
+      model: model,
     });
   }
 
   // Restore the last page summary when the popup is opened
-  restoreSummary().then((summary) => {
-    if (summary != null) {
-      updateSummary(marked.marked(summary));
+  restoreSummary().then((result) => {
+    if (result != null) {
+      setModel(result.model);
+
+      updateSummary(marked.marked(result.summary));
+
+      // When restoring a summary, force the page to scroll to the top
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+      });
     }
   });
 
@@ -132,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Set up the port message listener
   let lastMessage = null;
 
-  port.onMessage.addListener(function (msg) {
+  port.onMessage.addListener(async function (msg) {
     if (msg == null) {
       return;
     }
@@ -144,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'GPT_DONE':
-        setSummary(lastMessage);
+        const model = await getModel();
+        setSummary(lastMessage, model);
         working = false;
         break;
 

@@ -152,14 +152,14 @@ export async function fetchAndStream(port, messages, options = {}) {
     return;
   }
 
-  debug('PROMPT:', messages);
-
   try {
     const payload = {
       model: options.model || config.model,
       messages: messages,
       stream: true,
     };
+
+    debug('PAYLOAD', payload);
 
     const response = await fetchCompletions(config.apiKey, payload);
     const reader = GptResponseReader(response);
