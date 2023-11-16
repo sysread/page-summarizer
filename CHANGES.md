@@ -1,3 +1,6 @@
+# 1.7
+- Fix stack craziness in form filler outer
+
 # 1.6
 - User can now override configured model from the popup
 
