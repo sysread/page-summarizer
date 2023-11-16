@@ -8,6 +8,7 @@ if (chrome && chrome.runtime) {
     let overlay;
     let instruction;
     let target;
+    let allowFocusChange = true;
 
     function fillText(element, textToFill) {
       requestAnimationFrame(() => {
@@ -33,10 +34,28 @@ if (chrome && chrome.runtime) {
     }
 
     function restoreFocus(event) {
+      if (event.target != instruction && !allowFocusChange) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        allowFocusChange = true;
+        instruction.focus();
+        allowFocusChange = false;
+
+        return false;
+      }
+      return true;
+    }
+
+    function restoreFocus(event) {
       if (event.target != instruction) {
         event.stopPropagation();
         event.preventDefault();
+
+        allowFocusChange = true;
         instruction.focus();
+        allowFocusChange = false;
+
         return false;
       }
 
@@ -154,7 +173,9 @@ if (chrome && chrome.runtime) {
       document.body.insertBefore(overlayHost, document.body.firstChild);
 
       // Focus the textarea
+      allowFocusChange = true;
       instruction.focus();
+      allowFocusChange = false;
 
       // Prevent focus from leaving the textarea (some sites will steal focus as
       // part of their implementation of a contenteditable non-form element).
