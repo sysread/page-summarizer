@@ -1,6 +1,7 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
   const port = chrome.runtime.connect({ name: 'summarize' });
   const target = document.getElementById('summary');
+  const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
 
   //----------------------------------------------------------------------------
@@ -8,8 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
   //----------------------------------------------------------------------------
   const extra = document.getElementById('extra-instructions');
   const hint = 'Please summarize this web page.';
-
-  extra.value = hint;
+  extra.value ||= hint;
 
   extra.addEventListener('focus', () => {
     if (extra.value == hint) {
@@ -30,8 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
   //----------------------------------------------------------------------------
   async function setModel(model = null) {
     if (model == null) {
-      const config = await chrome.storage.sync.get(['model']);
-      modelDropdown.value = config.model;
+      const profileName = profileSelector.value;
+      const config = await chrome.storage.sync.get('profiles');
+      modelDropdown.value = config.profiles[profileName].model;
     } else {
       modelDropdown.value = model;
     }
@@ -39,17 +40,70 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function getModel() {
     const selectedModel = modelDropdown ? modelDropdown.value : undefined;
+    return selectedModel || 'gpt-3.5-turbo-16k'; // Fallback to a default model
+  }
 
-    if (selectedModel) {
-      return selectedModel;
+  //----------------------------------------------------------------------------
+  // powers the profile dropdown
+  //----------------------------------------------------------------------------
+
+  // Load profiles and set the current profile in the dropdown
+  async function loadProfiles() {
+    const config = await chrome.storage.sync.get('profiles');
+    let profiles = config.profiles || { default: { model: 'gpt-3.5-turbo-16k' }, defaultProfile: 'default' };
+
+    const sortedKeys = Object.keys(profiles).sort((a, b) => {
+      if (a === 'default') return -1;
+      if (b === 'default') return 1;
+      return a.localeCompare(b);
+    });
+
+    sortedKeys.forEach((profileName) => {
+      if (profileName !== 'defaultProfile') {
+        const option = new Option(profileName, profileName);
+        profileSelector.add(option);
+      }
+    });
+
+    profileSelector.value = profiles.defaultProfile;
+    setModel(profiles[profiles.defaultProfile].model);
+  }
+
+  // Update the model and extra instructions when the profile changes
+  async function selectProfile() {
+    const selectedProfileName = profileSelector.value;
+    const config = await chrome.storage.sync.get('profiles');
+
+    if (config.profiles && config.profiles[selectedProfileName]) {
+      const selectedProfile = config.profiles[selectedProfileName];
+
+      setModel(selectedProfile.model);
+
+      // Update "custom instructions" textarea with the profile's custom prompts
+      extra.value = selectedProfile.customPrompts.join('\n');
+
+      // Make sure to handle the case when there are no custom prompts
+      if (!extra.value) {
+        extra.value = hint;
+        extra.classList.add('hint');
+      } else {
+        // Remove the hint class if the custom prompts are not empty
+        extra.classList.remove('hint');
+      }
     } else {
-      const config = await chrome.storage.local.get(['model']);
-      return config.model;
+      console.error(`Profile "${selectedProfileName}" not found.`);
+      setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
+      extra.value = hint; // Fallback instructions
+      extra.classList.add('hint');
     }
   }
 
-  // Set the default model on load
-  setModel();
+  // Initial call to load profiles
+  await loadProfiles();
+  await selectProfile();
+
+  // Update profile when the selector changes
+  profileSelector.addEventListener('change', selectProfile);
 
   //----------------------------------------------------------------------------
   // Autoscroll to the bottom of the page when new content is added. If the
@@ -124,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
       tabId: tabs[0].id,
       extra: extra.value,
       model: model,
+      profile: profileSelector.value,
     });
   }
 

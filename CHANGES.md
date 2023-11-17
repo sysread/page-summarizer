@@ -1,3 +1,6 @@
+# 1.8
+- New feature: profiles!
+
 # 1.7
 - Fix stack craziness in form filler outer
 

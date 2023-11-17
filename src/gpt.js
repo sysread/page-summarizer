@@ -145,7 +145,9 @@ function gptDone(port, summary) {
 // caller-supplied port.
 //------------------------------------------------------------------------------
 export async function fetchAndStream(port, messages, options = {}) {
-  const config = await chrome.storage.sync.get(['apiKey', 'model']);
+  const profileName = options.profile || 'default';
+  const profiles = await chrome.storage.sync.get('profiles');
+  const config = profiles['profiles'][profileName];
 
   if (config.apiKey === null || config.apiKey.length === 0) {
     gptError(port, ERR_API_KEY);

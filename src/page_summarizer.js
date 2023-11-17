@@ -1,6 +1,6 @@
 import { fetchAndStream } from './gpt.js';
 
-export async function fetchAndStreamSummary(port, content, extra, model) {
+export async function fetchAndStreamSummary(port, content, extra, model, profile) {
   let messages = [
     {
       role: 'system',
@@ -16,17 +16,7 @@ export async function fetchAndStreamSummary(port, content, extra, model) {
     },
   ];
 
-  if (extra === '' || extra === 'Please summarize this web page.') {
-    const config = await chrome.storage.sync.get(['customPrompts']);
-
-    for (const prompt of config.customPrompts) {
-      messages.push({ role: 'user', content: prompt });
-    }
-  }
-
-  messages.push({ role: 'user', content: extra });
-
-  return fetchAndStream(port, messages, { model: model });
+  return fetchAndStream(port, messages, { model: model, profile: profile });
 }
 
 export function connectPageSummarizer() {
@@ -37,6 +27,7 @@ export function connectPageSummarizer() {
           const tabId = msg.tabId;
           const extra = msg.extra;
           const model = msg.model;
+          const profile = msg.profile;
           const tab = await chrome.tabs.get(tabId);
 
           if (tab.url.startsWith('chrome://')) {
@@ -62,7 +53,7 @@ export function connectPageSummarizer() {
                 return;
               }
 
-              fetchAndStreamSummary(port, result[0].result, extra, model);
+              fetchAndStreamSummary(port, result[0].result, extra, model, profile);
             },
           );
         }

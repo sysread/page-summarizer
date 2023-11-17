@@ -20,9 +20,10 @@ async function fetchAndStreamFormFill(port, prompt, extra) {
     role: 'user',
     content: 'Do not wrap your response in quotes.',
   });
+
   messages.push({ role: 'user', content: prompt });
 
-  return fetchAndStream(port, messages);
+  return fetchAndStream(port, messages, { profile: 'default' });
 }
 
 export function connectFormFiller() {
