@@ -37,6 +37,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   setWindowSize();
 
   //----------------------------------------------------------------------------
+  // Powers the button that opens the options page
+  //----------------------------------------------------------------------------
+  document.getElementById('options').addEventListener('click', function () {
+    chrome.runtime.openOptionsPage(); // if using options_page in manifest
+  });
+
+  //----------------------------------------------------------------------------
   // powers the doc hint in the extra instructions text area
   //----------------------------------------------------------------------------
   const hint = 'Please summarize this web page.';
@@ -193,6 +200,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   function updateSummary(message) {
     requestAnimationFrame(() => {
+      document.getElementById('summaryCard').classList.remove('visually-hidden');
+
       target.innerHTML = message;
 
       // Autoscroll to the bottom of the page

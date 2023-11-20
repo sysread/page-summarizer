@@ -18,6 +18,7 @@
     <div class="input-group input-group-sm mb-1">
       <span class="input-group-text">Profile</span>
       <select id="profileSelector" name="profileSelector" class="form-select"></select>
+      <button id="options" class="btn btn-outline-secondary" title="Click to open settings">&#x2699;</button>
     </div>
 
     <div class="input-group input-group-sm mb-2">
@@ -35,12 +36,12 @@
     </div>
 
     <div class="input-group input-group-sm mb-3">
-      <button id="summarize" class="btn btn-primary">Summarize page</button>
+      <button id="summarize" class="btn btn-primary btn-sm">Summarize page</button>
     </div>
 
     <div id="errors"></div>
 
-    <div class="card mb-3">
+    <div id="summaryCard" class="card mb-3 text-bg-light visually-hidden">
       <div class="card-body">
         <div id="summary"></div>
       </div>
