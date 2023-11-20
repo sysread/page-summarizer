@@ -10,31 +10,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   const debug = document.getElementById('debug');
   const isDefault = document.getElementById('default');
 
-  let storedData;
+  let config;
   let profiles;
   let currentProfile;
+  let debugSet;
 
   function buildDefaultProfile() {
     return {
       apiKey: '',
       model: 'gpt-3.5-turbo-16k',
       customPrompts: [],
-      debug: false,
     };
   }
 
   async function saveProfiles() {
-    await chrome.storage.sync.set({ profiles });
+    await chrome.storage.sync.set({
+      profiles: profiles,
+      debug: debugSet,
+    });
+
     await reloadProfiles();
   }
 
   async function reloadProfiles() {
-    storedData = await chrome.storage.sync.get('profiles');
+    config = await chrome.storage.sync.get(['debug', 'profiles']);
 
-    profiles = storedData.profiles || {
+    profiles = config.profiles || {
       defaultProfile: 'default',
       default: buildDefaultProfile(),
     };
+
+    debugSet = !!(config.debug || false);
 
     if (profiles.defaultProfile in profiles) {
       currentProfile = profiles.defaultProfile;
@@ -43,7 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       // default one and save it real quick.
       profiles.defaultProfile = 'default';
       profiles[currentProfile] = buildDefaultProfile();
-      await chrome.storage.sync.set({ profiles });
+
+      await chrome.storage.sync.set({
+        profiles: profiles,
+        debug: debugSet,
+      });
+
       currentProfile = 'default';
     }
 
@@ -73,11 +84,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await selectProfile(currentProfile);
 
-    console.log('Profiles:', profiles);
+    console.log('Debug mode', debugSet);
+    console.log('Profiles', profiles);
   }
 
   // Update the form inputs with profile values
   function selectProfile(profile) {
+    debug.checked = debugSet;
+
     if (profile === null) {
       currentProfile = null;
 
@@ -85,7 +99,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       apiKey.value = '';
       model.value = 'gpt-3.5-turbo-16k';
       customPrompts.value = '';
-      debug.checked = false;
       isDefault.checked = false;
 
       return;
@@ -99,7 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       apiKey.value = data.apiKey || '';
       model.value = data.model || 'gpt-3.5-turbo-16k';
       customPrompts.value = data.customPrompts.join('\n') || '';
-      debug.checked = data.debug || false;
       isDefault.checked = currentProfile === profiles.defaultProfile;
 
       profileSelector.value = profile;
@@ -154,12 +166,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       apiKey: apiKey,
       model: model,
       customPrompts: customPrompts,
-      debug: debug,
     };
 
     if (isDefault) {
       profiles.defaultProfile = name;
     }
+
+    debugSet = debug;
 
     // Save the updated profiles object to chrome's storage
     await saveProfiles();
