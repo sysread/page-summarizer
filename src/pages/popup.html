@@ -3,103 +3,56 @@
   <head>
     <title>Page Summarizer</title>
 
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <style>
-      html {
-        font-size: 16px;
-      }
+    <link rel="stylesheet" href="../../assets/bootstrap.min.css" />
 
+    <style>
       body {
         width: 600px;
         height: 600px;
       }
 
-      #summary {
-        overflow-y: auto;
-        word-wrap: break-word;
-        padding: 1em 0em;
-      }
-
-      #form {
-        width: 90%;
-        margin-bottom: 1em;
-      }
-
-      #extra-instructions {
-        width: 100%;
-        height: 50px;
-        margin: 1em 0em;
-        font-size: 1rem;
-      }
-
-      #model-cell {
-        width: 50%;
-        text-align: left;
-      }
-
-      #submit-cell {
-        width: 50%;
-        text-align: right;
-      }
-
-      .hint {
-        color: grey;
-      }
-
       li {
-        margin-bottom: 1em;
-      }
-
-      @media screen and (max-width: 600px) {
-        body {
-          font-size: 1.5rem;
-        }
-
-        #extra-instructions {
-          height: 20%;
-          font-size: 1.5rem;
-        }
-
-        button {
-          font-size: 1.5rem;
-        }
+        margin-bottom: 0.5em;
       }
     </style>
   </head>
-  <body>
-    <h1>Page Summarizer</h1>
+  <body class="p-2">
+    <div class="input-group input-group-sm mb-1">
+      <span class="input-group-text">Profile</span>
+      <select id="profileSelector" name="profileSelector" class="form-select"></select>
+    </div>
 
-    <label for="profileSelector">Profile:</label>
-    <select id="profileSelector" name="profileSelector"></select>
+    <div class="input-group input-group-sm mb-2">
+      <span class="input-group-text">Model</span>
+      <select id="model" name="model" class="form-select">
+        <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+        <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
+        <option value="gpt-4">GPT-4</option>
+        <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
+      </select>
+    </div>
 
-    <table id="form">
-      <tr>
-        <td colspan="2">
-          <textarea id="extra-instructions" class="hint"></textarea>
-        </td>
-      </tr>
-      <tr>
-        <td id="model-cell">
-          <select id="model" name="model">
-            <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
-            <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
-            <option value="gpt-4">GPT-4</option>
-            <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
-          </select>
-        </td>
+    <div class="input-group input-group-sm mb-3">
+      <textarea id="extra-instructions" class="hint form-control" rows="3"></textarea>
+    </div>
 
-        <td id="submit-cell">
-          <button id="summarize">Summarize page</button>
-        </td>
-      </tr>
-    </table>
+    <div class="input-group input-group-sm mb-3">
+      <button id="summarize" class="btn btn-primary">Summarize page</button>
+    </div>
 
-    <div id="summary"></div>
+    <div class="card mb-3">
+      <div class="card-body">
+        <div id="summary"></div>
+      </div>
+    </div>
 
-    <div id="debug"></div>
+    <div id="debug mb-3"></div>
 
     <script src="../../assets/marked.min.js"></script>
+    <script src="../../assets/bootstrap.bundle.min.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

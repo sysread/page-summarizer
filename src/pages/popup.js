@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
+  const extra = document.getElementById('extra-instructions');
 
   //----------------------------------------------------------------------------
   // powers the doc hint in the extra instructions text area
   //----------------------------------------------------------------------------
-  const extra = document.getElementById('extra-instructions');
   const hint = 'Please summarize this web page.';
   extra.value ||= hint;
 
@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     let profiles = config.profiles || { default: { model: 'gpt-3.5-turbo-16k' }, defaultProfile: 'default' };
 
     const sortedKeys = Object.keys(profiles).sort((a, b) => {
-      if (a === 'default') return -1;
-      if (b === 'default') return 1;
+      if (a === profiles.defaultProfile) return -1;
+      if (b === profiles.defaultProfile) return 1;
       return a.localeCompare(b);
     });
 
