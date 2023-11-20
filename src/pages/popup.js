@@ -6,6 +6,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   const modelDropdown = document.getElementById('model');
   const extra = document.getElementById('extra-instructions');
 
+  function reportError(msg) {
+    document.getElementById('errors').innerHTML = [
+      `<div class="alert alert-danger alert-dismissible fadee" role="alert">`,
+      `   <div>${msg}</div>`,
+      '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+      '</div>',
+    ].join('');
+  }
+
   //----------------------------------------------------------------------------
   // Controlling the popup window size is a real pain in extensions. This
   // function attempts to set the window size to 'auto' on small screen
@@ -72,7 +81,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Load profiles and set the current profile in the dropdown
   async function loadProfiles() {
     const config = await chrome.storage.sync.get('profiles');
-    let profiles = config.profiles || { default: { model: 'gpt-3.5-turbo-16k' }, defaultProfile: 'default' };
+
+    let profiles = config.profiles;
+
+    if (!profiles) {
+      reportError('No profiles found. Right-click the extension icon and select "Options" to create a profile.');
+      return;
+    }
 
     const sortedKeys = Object.keys(profiles).sort((a, b) => {
       if (a === profiles.defaultProfile) return -1;
@@ -113,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         extra.classList.remove('hint');
       }
     } else {
-      console.error(`Profile "${selectedProfileName}" not found.`);
+      reportError(`Profile "${selectedProfileName}" not found.`);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
       extra.value = hint; // Fallback instructions
       extra.classList.add('hint');
@@ -185,10 +200,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         window.scrollTo(0, document.body.scrollHeight);
       }
     });
-  }
-
-  function reportError(message) {
-    updateSummary(`<span style="color: red; font-style: italic;">Error: ${message}</span>`);
   }
 
   async function requestNewSummary() {
