@@ -1,9 +1,31 @@
 document.addEventListener('DOMContentLoaded', async function () {
   const port = chrome.runtime.connect({ name: 'summarize' });
+
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
   const extra = document.getElementById('extra-instructions');
+
+  //----------------------------------------------------------------------------
+  // Controlling the popup window size is a real pain in extensions. This
+  // function attempts to set the window size to 'auto' on small screen
+  // devices, like mobile browsers, where the popup is likely to have been
+  // opened in a full screen tab (as is the case with Kiwi). On larger screens,
+  // the popup is set to a fixed size of 600px x 600px.
+  //----------------------------------------------------------------------------
+  function setWindowSize() {
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+    if (isMobile) {
+      document.body.style.width = 'auto';
+      document.body.style.height = 'auto';
+    } else {
+      document.body.style.width = '600px';
+      document.body.style.height = '600px';
+    }
+  }
+
+  setWindowSize();
 
   //----------------------------------------------------------------------------
   // powers the doc hint in the extra instructions text area
