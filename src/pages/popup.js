@@ -134,6 +134,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Remove the hint class if the custom prompts are not empty
         extra.classList.remove('hint');
       }
+    } else if (selectedProfileName === '') {
+      reportError(
+        'No profiles found. Use the gear icon above or right-click the extension icon and select "Options" to create a profile.',
+      );
+      setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
+      extra.value = hint; // Fallback instructions
+      extra.classList.add('hint');
     } else {
       reportError(`Profile "${selectedProfileName}" not found.`);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
