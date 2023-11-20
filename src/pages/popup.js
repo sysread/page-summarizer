@@ -1,11 +1,82 @@
 document.addEventListener('DOMContentLoaded', async function () {
-  const port = chrome.runtime.connect({ name: 'summarize' });
-
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
   const extra = document.getElementById('extra-instructions');
 
+  //----------------------------------------------------------------------------
+  // Port management
+  //----------------------------------------------------------------------------
+  let port;
+  let portIsConnected = false;
+
+  function connectPort() {
+    port = chrome.runtime.connect({ name: 'summarize' });
+    portIsConnected = true;
+
+    // Attach the message listener
+    port.onMessage.addListener(onMessage);
+
+    // If the port disconnects, try to reconnect once after a short delay.
+    port.onDisconnect.addListener(() => {
+      portIsConnected = false;
+      setTimeout(connectPort);
+    });
+  }
+
+  function postMessage(msg) {
+    if (!portIsConnected) {
+      connectPort();
+    }
+
+    port.postMessage(msg);
+  }
+
+  connectPort();
+
+  // Send regular "keep-alive" messages to the background script to ensure it
+  // continues running for as long as the user keeps the popup open.
+  setInterval(() => {
+    postMessage({ action: 'KEEP_ALIVE' });
+  }, 1000);
+
+  //----------------------------------------------------------------------------
+  // Message listener
+  //----------------------------------------------------------------------------
+  let lastMessage = null;
+
+  async function onMessage(msg) {
+    if (msg == null) {
+      return;
+    }
+
+    switch (msg.action) {
+      case 'GPT_MESSAGE':
+        lastMessage = msg.summary;
+        updateSummary(format(msg.summary));
+        break;
+
+      case 'GPT_DONE':
+        const model = await getModel();
+        setSummary(lastMessage, model);
+        working = false;
+        break;
+
+      case 'GPT_ERROR':
+        reportError(msg.error);
+        working = false;
+        break;
+
+      default:
+        reportError('Failed to fetch summary.');
+        working = false;
+        break;
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // Display error messages from the background script.
+  //----------------------------------------------------------------------------
   function reportError(msg) {
     document.getElementById('errors').innerHTML = [
       `<div class="alert alert-danger alert-dismissible fadee" role="alert">`,
@@ -222,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const model = await getModel();
 
-    port.postMessage({
+    postMessage({
       action: 'SUMMARIZE',
       tabId: tabs[0].id,
       extra: extra.value,
@@ -257,37 +328,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     working = true;
     updateSummary('Fetching summary...');
     requestNewSummary();
-  });
-
-  // Set up the port message listener
-  let lastMessage = null;
-
-  port.onMessage.addListener(async function (msg) {
-    if (msg == null) {
-      return;
-    }
-
-    switch (msg.action) {
-      case 'GPT_MESSAGE':
-        lastMessage = msg.summary;
-        updateSummary(format(msg.summary));
-        break;
-
-      case 'GPT_DONE':
-        const model = await getModel();
-        setSummary(lastMessage, model);
-        working = false;
-        break;
-
-      case 'GPT_ERROR':
-        reportError(msg.error);
-        working = false;
-        break;
-
-      default:
-        reportError('Failed to fetch summary.');
-        working = false;
-        break;
-    }
   });
 });

@@ -149,6 +149,12 @@ export async function fetchAndStream(port, messages, options = {}) {
   const profiles = await chrome.storage.sync.get('profiles');
   const config = profiles['profiles'][profileName];
 
+  let connected = true;
+
+  port.onDisconnect.addListener(() => {
+    connected = false;
+  });
+
   if (config.apiKey === null || config.apiKey.length === 0) {
     gptError(port, ERR_API_KEY);
     return;
@@ -167,8 +173,13 @@ export async function fetchAndStream(port, messages, options = {}) {
     const reader = GptResponseReader(response);
     let lastMessage = null;
 
-    while (true) {
+    while (connected) {
       const message = await reader();
+
+      if (!connected) {
+        debug('DISCONNECTED');
+        break;
+      }
 
       if (message === null) {
         break;
@@ -178,20 +189,23 @@ export async function fetchAndStream(port, messages, options = {}) {
 
       const { data: data, error: error } = message;
 
-      if (error !== null) {
-        gptError(port, error);
-      } else if (data !== null) {
-        gptMessage(port, data);
-        lastMessage = data;
+      if (connected) {
+        if (error !== null) {
+          gptError(port, error);
+        } else if (data !== null) {
+          gptMessage(port, data);
+          lastMessage = data;
+        }
+      } else {
+        debug('DISCONNECTED');
+        break;
       }
     }
 
-    gptDone(port, lastMessage);
-  } catch (error) {
-    if (error === PORT_CLOSED) {
-      return;
-    } else {
-      console.error(error);
+    if (connected) {
+      gptDone(port, lastMessage);
     }
+  } catch (error) {
+    console.error(error);
   }
 }
