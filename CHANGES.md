@@ -1,5 +1,7 @@
 # 1.8
 - New feature: profiles!
+- Bugfix: mitigate port disconnctions while popup remains open
+- Bugfix: handle port disconnections gracefully when popup is closed
 
 # 1.7
 - Fix stack craziness in form filler outer
