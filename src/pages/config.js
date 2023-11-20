@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Show saved status
     showSuccess('Settings saved.');
+    window.scrollTo(0, document.body.scrollHeight);
   }
 
   function showStatus(msg, type) {
