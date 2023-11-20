@@ -145,9 +145,8 @@ function gptDone(port, summary) {
 // caller-supplied port.
 //------------------------------------------------------------------------------
 export async function fetchAndStream(port, messages, options = {}) {
-  const profileName = options.profile || 'default';
-  const profiles = await chrome.storage.sync.get('profiles');
-  const config = profiles['profiles'][profileName];
+  const config = await chrome.storage.sync.get(['apiKey', 'profiles', 'defaultProfile']);
+  const profile = config.profiles[options.profile || config.defaultProfile];
 
   let connected = true;
 
@@ -162,7 +161,7 @@ export async function fetchAndStream(port, messages, options = {}) {
 
   try {
     const payload = {
-      model: options.model || config.model,
+      model: options.model || profile.model,
       messages: messages,
       stream: true,
     };

@@ -19,7 +19,7 @@ export async function connectSelectionSummarizer() {
       const text = info.selectionText;
       const port = chrome.tabs.connect(tab.id, { name: 'contentScriptPort' });
 
-      fetchAndStreamSummary(port, text, '', '', 'default');
+      fetchAndStreamSummary(port, text, '', '', '');
     }
   });
 }

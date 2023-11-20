@@ -17,26 +17,28 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const oldConfig = await chrome.storage.sync.get(['apiKey', 'model', 'customPrompts', 'debug']);
 
     // Check if there is an old config and no profiles key
-    if (oldConfig.apiKey && !oldConfig.profiles) {
+    if (oldConfig.model && !oldConfig.profiles) {
       // Found old configuration, migrate to new profile-based format
       const defaultProfileConfig = {
-        apiKey: oldConfig.apiKey,
         model: oldConfig.model || 'gpt-3.5-turbo-16k',
         customPrompts: oldConfig.customPrompts || [],
       };
 
       // Wrap the default profile configuration into the new profiles structure
-      const newProfilesConfig = {
-        debug: oldConfig.debug || false,
+      const newConfig = {
+        apiKey: oldConfig.apiKey || '',
         defaultProfile: 'default',
-        default: defaultProfileConfig,
+        debug: oldConfig.debug || false,
+        profiles: {
+          default: defaultProfileConfig,
+        },
       };
 
       // Save the new config
-      await chrome.storage.sync.set({ profiles: newProfilesConfig });
+      await chrome.storage.sync.set(newConfig);
 
       // Optionally, clear the old configuration keys if you don't want to keep them anymore
-      await chrome.storage.sync.remove(['apiKey', 'model', 'customPrompts']);
+      await chrome.storage.sync.remove(['model', 'customPrompts']);
     }
   }
 });

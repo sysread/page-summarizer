@@ -1,6 +1,16 @@
 import { fetchAndStream } from './gpt.js';
 
 export async function fetchAndStreamSummary(port, content, extra, model, profile) {
+  const { profiles, defaultProfile } = await chrome.storage.sync.get(['profiles', 'defaultProfile']);
+
+  if (!profile) {
+    profile = defaultProfile;
+  }
+
+  if (!extra) {
+    extra = profiles[profile].customPrompts.join('\n');
+  }
+
   let messages = [
     {
       role: 'system',

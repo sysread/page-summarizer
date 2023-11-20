@@ -37,6 +37,7 @@ if (chrome && chrome.runtime) {
       overlay.style.border = '2px solid black';
       overlay.style.padding = '1em';
       overlay.style.margin = '1em';
+      overlay.style.overflowY = 'scroll';
 
       const content = document.createElement('div');
       content.id = 'overlayContent';

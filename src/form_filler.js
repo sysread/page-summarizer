@@ -23,7 +23,7 @@ async function fetchAndStreamFormFill(port, prompt, extra) {
 
   messages.push({ role: 'user', content: prompt });
 
-  return fetchAndStream(port, messages, { profile: 'default' });
+  return fetchAndStream(port, messages);
 }
 
 export function connectFormFiller() {

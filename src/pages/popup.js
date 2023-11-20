@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   const modelDropdown = document.getElementById('model');
   const extra = document.getElementById('extra-instructions');
 
+  const noProfilesMessage =
+    'No profiles found. Use the gear icon above or right-click the extension icon and select "Options" to create a profile.';
+
   //----------------------------------------------------------------------------
   // Port management
   //----------------------------------------------------------------------------
@@ -158,36 +161,32 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Load profiles and set the current profile in the dropdown
   async function loadProfiles() {
-    const config = await chrome.storage.sync.get('profiles');
-
-    let profiles = config.profiles;
+    const { defaultProfile, profiles } = await chrome.storage.sync.get(['defaultProfile', 'profiles']);
 
     if (!profiles) {
-      reportError('No profiles found. Right-click the extension icon and select "Options" to create a profile.');
+      reportError(noProfilesMessage);
       return;
     }
 
     const sortedKeys = Object.keys(profiles).sort((a, b) => {
-      if (a === profiles.defaultProfile) return -1;
-      if (b === profiles.defaultProfile) return 1;
+      if (a === defaultProfile) return -1;
+      if (b === defaultProfile) return 1;
       return a.localeCompare(b);
     });
 
     sortedKeys.forEach((profileName) => {
-      if (profileName !== 'defaultProfile') {
-        const option = new Option(profileName, profileName);
-        profileSelector.add(option);
-      }
+      const option = new Option(profileName, profileName);
+      profileSelector.add(option);
     });
 
-    profileSelector.value = profiles.defaultProfile;
-    setModel(profiles[profiles.defaultProfile].model);
+    profileSelector.value = defaultProfile;
+    setModel(profiles[defaultProfile].model);
   }
 
   // Update the model and extra instructions when the profile changes
   async function selectProfile() {
     const selectedProfileName = profileSelector.value;
-    const config = await chrome.storage.sync.get('profiles');
+    const config = await chrome.storage.sync.get(['defaultProfile', 'profiles']);
 
     if (config.profiles && config.profiles[selectedProfileName]) {
       const selectedProfile = config.profiles[selectedProfileName];
@@ -206,9 +205,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         extra.classList.remove('hint');
       }
     } else if (selectedProfileName === '') {
-      reportError(
-        'No profiles found. Use the gear icon above or right-click the extension icon and select "Options" to create a profile.',
-      );
+      reportError(noProfilesMessage);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
       extra.value = hint; // Fallback instructions
       extra.classList.add('hint');

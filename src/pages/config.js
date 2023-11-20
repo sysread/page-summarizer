@@ -3,148 +3,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const profileSelector = document.getElementById('profileSelector');
 
-  const name = document.getElementById('name');
+  // Global options
   const apiKey = document.getElementById('apiKey');
+  const debug = document.getElementById('debug');
+
+  // Profile options
+  const name = document.getElementById('name');
   const model = document.getElementById('model');
   const customPrompts = document.getElementById('customPrompts');
-  const debug = document.getElementById('debug');
   const isDefault = document.getElementById('default');
 
   let config;
-  let profiles;
   let currentProfile;
-  let debugSet;
 
   function buildDefaultProfile() {
     return {
-      apiKey: '',
       model: 'gpt-3.5-turbo-16k',
       customPrompts: [],
     };
   }
 
-  async function saveProfiles() {
-    await chrome.storage.sync.set({
-      profiles: profiles,
-      debug: debugSet,
-    });
-
-    await reloadProfiles();
-  }
-
-  async function reloadProfiles() {
-    config = await chrome.storage.sync.get(['debug', 'profiles']);
-
-    profiles = config.profiles || {
+  function buildDefaultConfig() {
+    return {
+      apiKey: '',
+      debug: false,
       defaultProfile: 'default',
-      default: buildDefaultProfile(),
+      profiles: {
+        default: buildDefaultProfile(),
+      },
     };
-
-    debugSet = !!(config.debug || false);
-
-    if (profiles.defaultProfile in profiles) {
-      currentProfile = profiles.defaultProfile;
-    } else {
-      // Something went wrong and there is no default profile. Create a new
-      // default one and save it real quick.
-      profiles.defaultProfile = 'default';
-      profiles[currentProfile] = buildDefaultProfile();
-
-      await chrome.storage.sync.set({
-        profiles: profiles,
-        debug: debugSet,
-      });
-
-      currentProfile = 'default';
-    }
-
-    // Load profiles into the dropdown and select the current profile.
-    // Sort the profiles such that the default profile is always first.
-    const sortedProfileNames = Object.keys(profiles).sort((a, b) => {
-      if (a === profiles.defaultProfile) return -1;
-      if (b === profiles.defaultProfile) return 1;
-      return a.localeCompare(b);
-    });
-
-    // Clear the current options before we repopulate them
-    profileSelector.innerHTML = '';
-
-    // Populate the profile selector dropdown
-    sortedProfileNames.forEach((name) => {
-      // defaultProfile is a special key that is used to store the name of the
-      // default profile rather than the profile data itself.
-      if (name === 'defaultProfile') {
-        return;
-      }
-
-      const option = new Option(name, name);
-      option.selected = name == currentProfile;
-      profileSelector.add(option);
-    });
-
-    await selectProfile(currentProfile);
-
-    console.log('Debug mode', debugSet);
-    console.log('Profiles', profiles);
   }
 
-  // Update the form inputs with profile values
-  function selectProfile(profile) {
-    debug.checked = debugSet;
-
-    if (profile === null) {
-      currentProfile = null;
-
-      name.value = '';
-      apiKey.value = '';
-      model.value = 'gpt-3.5-turbo-16k';
-      customPrompts.value = '';
-      isDefault.checked = false;
-
-      return;
-    }
-
-    if (profile in profiles) {
-      currentProfile = profile;
-      const data = profiles[currentProfile];
-
-      name.value = profile;
-      apiKey.value = data.apiKey || '';
-      model.value = data.model || 'gpt-3.5-turbo-16k';
-      customPrompts.value = data.customPrompts.join('\n') || '';
-      isDefault.checked = currentProfile === profiles.defaultProfile;
-
-      profileSelector.value = profile;
-
-      return;
-    }
-
-    showError(`Profile "${profile}" does not exist.`);
-  }
-
-  async function deleteCurrentProfile() {
-    if (currentProfile !== profiles.defaultProfile) {
-      if (confirm(`Are you sure you want to delete "${currentProfile}"? This cannot be undone.`)) {
-        let profileToDelete = currentProfile;
-        delete profiles[profileToDelete];
-        await saveProfiles();
-        showSuccess(`Profile "${profileToDelete}" deleted.`);
-      }
-    } else {
-      showError('Cannot delete the default profile.');
-    }
-  }
-
-  async function saveProfile() {
-    const name = document.getElementById('name').value.trim();
+  async function saveConfig() {
+    // Global options
+    const debug = document.getElementById('debug').checked;
     const apiKey = document.getElementById('apiKey').value.trim();
+
+    // Profile options
+    const name = document.getElementById('name').value.trim();
     const model = document.getElementById('model').value.trim();
     const customPrompts = document.getElementById('customPrompts').value.split('\n');
-    const debug = document.getElementById('debug').checked;
     const isDefault = document.getElementById('default').checked;
 
-    if (name == 'defaultProfile') {
-      showError('Cannot use "defaultProfile" as a profile name.');
+    // Basic validations
+    if (apiKey == '') {
+      showError('An API key is required. Get one <a href="https://beta.openai.com">here</a>.');
       return;
     }
 
@@ -153,34 +56,133 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    if (apiKey == '') {
-      showError('API key cannot be empty.');
-      return;
-    }
-
-    // In case the user changed the profile name, delete the old profile.
-    delete profiles[currentProfile];
-
-    // Then add the updated profile
-    profiles[name] = {
-      apiKey: apiKey,
+    const newProfile = {
       model: model,
       customPrompts: customPrompts,
     };
 
-    if (isDefault) {
-      profiles.defaultProfile = name;
+    // The user is changing the current profile's name
+    if (currentProfile !== null && name !== currentProfile) {
+      delete config.profiles[currentProfile];
+      config.profiles[name] = newProfile;
+      currentProfile = name;
+    }
+    // The user is adding a new profile
+    else if (currentProfile === null) {
+      currentProfile = name;
+      config.profiles[name] = newProfile;
+    }
+    // The user is updating the current profile
+    else {
+      config.profiles[name] = newProfile;
     }
 
-    debugSet = debug;
+    config.debug = debug;
+    config.apiKey = apiKey;
 
-    // Save the updated profiles object to chrome's storage
-    await saveProfiles();
+    if (isDefault) {
+      config.defaultProfile = name;
+    }
+
+    await chrome.storage.sync.set(config);
+    await reloadConfig();
     await selectProfile(name);
 
-    // Show saved status
+    window.scrollTo(0, 0);
     showSuccess('Settings saved.');
-    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  async function deleteCurrentProfile() {
+    if (currentProfile === config.defaultProfile) {
+      showError('Cannot delete the default profile.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete "${currentProfile}"? This cannot be undone.`)) {
+      delete config.profiles[currentProfile];
+      profileSelector.remove(profileSelector.selectedIndex);
+      await chrome.storage.sync.set(config);
+      showSuccess(`Profile "${currentProfile}" deleted.`);
+      await selectProfile(config.defaultProfile);
+    }
+  }
+
+  async function addNewProfile() {
+    const name = prompt('Enter a name for the new profile');
+
+    if (name in config.profiles) {
+      showError(`Profile "${name}" already exists.`);
+      return;
+    }
+
+    config.profiles[name] = buildDefaultProfile();
+    await chrome.storage.sync.set(config);
+
+    addOption(name);
+
+    // omg this is stupid, why do i have to do this?
+    profileSelector.value = name;
+    const event = new Event('change', { bubbles: true });
+    profileSelector.dispatchEvent(event);
+  }
+
+  async function reloadConfig() {
+    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'profiles']);
+    console.log('Config', config);
+
+    if (config.profiles === undefined) {
+      config.profiles = { profiles: buildDefaultProfile() };
+      config.defaultProfile = 'default';
+    }
+
+    // Update state variables
+    currentProfile = config.defaultProfile;
+
+    // Then update the form with global configs
+    debug.checked = !!(config.debug || false);
+    apiKey.value = config.apiKey;
+
+    // Load profiles into the dropdown and select the current profile.
+    // Sort the profiles such that the default profile is always first.
+    const sortedProfileNames = Object.keys(config.profiles).sort((a, b) => {
+      if (a === config.defaultProfile) return -1;
+      if (b === config.defaultProfile) return 1;
+      return a.localeCompare(b);
+    });
+
+    // Clear the current options before we repopulate them
+    profileSelector.innerHTML = '';
+
+    // Populate the profile selector dropdown
+    sortedProfileNames.forEach(addOption);
+
+    await selectProfile(currentProfile);
+  }
+
+  function addOption(name) {
+    const option = new Option(name, name);
+    option.selected = name == currentProfile;
+    profileSelector.add(option);
+    return option;
+  }
+
+  // Update the form inputs with profile values
+  function selectProfile(profile) {
+    if (profile in config.profiles) {
+      const data = config.profiles[profile];
+
+      currentProfile = profile;
+      profileSelector.value = profile;
+
+      name.value = profile;
+      model.value = data.model || 'gpt-3.5-turbo-16k';
+      customPrompts.value = data.customPrompts.join('\n') || '';
+      isDefault.checked = profile === config.defaultProfile;
+
+      return;
+    }
+
+    showError(`Profile "${profile}" does not exist.`);
   }
 
   function showStatus(msg, type) {
@@ -207,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Handler to add new profile
   document.getElementById('add-profile-btn').addEventListener('click', async () => {
-    await selectProfile(null);
+    await addNewProfile();
   });
 
   // Handler to delete the current profile
@@ -218,9 +220,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Form submission handler
   document.getElementById('save-profile-btn').addEventListener('click', async (e) => {
     e.preventDefault();
-    await saveProfile();
+    await saveConfig();
   });
 
-  // Load profiles on page load
-  await reloadProfiles();
+  if (false) {
+    await chrome.storage.sync.set({
+      apiKey: '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',
+      debug: false,
+      defaultProfile: 'default',
+      profiles: { default: buildDefaultProfile() },
+    });
+  }
+
+  // Load config on page load
+  await reloadConfig();
 });

@@ -14,52 +14,59 @@
     <div id="status"></div>
 
     <div>
-      <form id="config-form">
-        <div class="mb-3">
-          <label for="profileSelector" class="form-label">Profile</label>
-          <select id="profileSelector" name="profileSelector" class="form-select"></select>
-          <div id="profileSelectorHelp" class="form-text">Select the profile you would like to edit.</div>
+      <div class="card mb-3">
+        <div class="card-header">Global settings</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="apiKey" class="form-label">OpenAI API Key</label>
+            <input type="text" id="apiKey" name="apiKey" class="form-control" />
+          </div>
+
+          <div class="form-check mb-3">
+            <input type="checkbox" id="debug" name="debug" class="form-check-input" />
+            <label for="debug" class="form-check-label">Debug mode</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header" id="profileCardHeader">
+          <div class="input-group">
+            <select id="profileSelector" name="profileSelector" class="form-select"></select>
+            <button id="add-profile-btn" class="btn btn-success">+</button>
+            <button id="delete-profile-btn" class="btn btn-danger">X</button>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="name" class="form-label">Name</label>
-          <input type="text" id="name" name="name" class="form-control" />
-        </div>
+        <div class="card-body">
+          <div class="form-check mb-3">
+            <input type="checkbox" id="default" name="default" class="form-check-input" />
+            <label for="default" class="form-check-label">Default</label>
+          </div>
 
-        <div class="mb-3">
-          <label for="apiKey" class="form-label">OpenAI API Key</label>
-          <input type="text" id="apiKey" name="apiKey" class="form-control" />
-        </div>
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" id="name" name="name" class="form-control" />
+          </div>
 
-        <div class="mb-3">
-          <label for="model" class="form-label">Default model</label>
-          <select id="model" name="model" class="form-select">
-            <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
-            <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
-            <option value="gpt-4">GPT-4</option>
-            <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
-          </select>
-        </div>
+          <div class="mb-3">
+            <label for="model" class="form-label">Default model</label>
+            <select id="model" name="model" class="form-select">
+              <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+              <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
+              <option value="gpt-4">GPT-4</option>
+              <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
+            </select>
+          </div>
 
-        <div class="mb-3">
-          <label for="customPrompts" class="form-label">Custom Prompts (One per line)</label>
-          <textarea id="customPrompts" name="customPrompts" class="form-control" rows="5"></textarea>
+          <div class="mb-3">
+            <label for="customPrompts" class="form-label">Custom Prompts (One per line)</label>
+            <textarea id="customPrompts" name="customPrompts" class="form-control" rows="5"></textarea>
+          </div>
         </div>
-
-        <div class="form-check mb-3">
-          <input type="checkbox" id="default" name="default" class="form-check-input" />
-          <label for="default" class="form-check-label">Default</label>
-        </div>
-
-        <div class="form-check mb-3">
-          <input type="checkbox" id="debug" name="debug" class="form-check-input" />
-          <label for="debug" class="form-check-label">Debug Mode</label>
-        </div>
-      </form>
+      </div>
 
       <button id="save-profile-btn" type="submit" class="btn btn-primary">Save</button>
-      <button id="add-profile-btn" class="btn btn-success">Add a new profile</button>
-      <button id="delete-profile-btn" class="btn btn-danger">Delete this profile</button>
     </div>
 
     <script src="config.js"></script>
