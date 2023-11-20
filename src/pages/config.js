@@ -223,15 +223,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await saveConfig();
   });
 
-  if (false) {
-    await chrome.storage.sync.set({
-      apiKey: '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',
-      debug: false,
-      defaultProfile: 'default',
-      profiles: { default: buildDefaultProfile() },
-    });
-  }
-
   // Load config on page load
   await reloadConfig();
 });
