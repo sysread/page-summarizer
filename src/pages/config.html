@@ -1,104 +1,68 @@
 <!doctype html>
 <html>
   <head>
-    <title>Configurations</title>
+    <title>Configuration</title>
 
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <style>
-      #status {
-        display: none;
-        padding: 1em;
-        margin: 1em 0em;
-        font-style: italic;
-        background-color: rgb(40, 167, 69);
-        color: white;
-        border-radius: 5px;
-      }
-
-      #close-btn {
-        float: right;
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-      }
-
-      textarea {
-        width: 90%;
-      }
-
-      select,
-      input[type='text'] {
-        width: 35%;
-      }
-
-      @media screen and (max-width: 600px) {
-        select,
-        input[type='text'] {
-          width: 90%;
-          display: block;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="../../assets/bootstrap.min.css" />
   </head>
-  <body>
-    <h1>Page summarizer settings</h1>
+  <body class="p-3">
+    <h1>Page summarizer</h1>
 
-    <div id="status">
-      <span id="status-text"></span>
-      <button id="close-btn">X</button>
+    <div id="status"></div>
+
+    <div>
+      <form id="config-form">
+        <div class="mb-3">
+          <label for="profileSelector" class="form-label">Profile</label>
+          <select id="profileSelector" name="profileSelector" class="form-select"></select>
+          <div id="profileSelectorHelp" class="form-text">Select the profile you would like to edit.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="name" class="form-label">Name</label>
+          <input type="text" id="name" name="name" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label for="apiKey" class="form-label">OpenAI API Key</label>
+          <input type="text" id="apiKey" name="apiKey" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label for="model" class="form-label">Default model</label>
+          <select id="model" name="model" class="form-select">
+            <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+            <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="customPrompts" class="form-label">Custom Prompts (One per line)</label>
+          <textarea id="customPrompts" name="customPrompts" class="form-control" rows="5"></textarea>
+        </div>
+
+        <div class="form-check mb-3">
+          <input type="checkbox" id="default" name="default" class="form-check-input" />
+          <label for="default" class="form-check-label">Default</label>
+        </div>
+
+        <div class="form-check mb-3">
+          <input type="checkbox" id="debug" name="debug" class="form-check-input" />
+          <label for="debug" class="form-check-label">Debug Mode</label>
+        </div>
+      </form>
+
+      <button id="save-profile-btn" type="submit" class="btn btn-primary">Save</button>
+      <button id="add-profile-btn" class="btn btn-success">Add a new profile</button>
+      <button id="delete-profile-btn" class="btn btn-danger">Delete this profile</button>
     </div>
-
-    <div id="profiles">
-      <div id="profile-section">
-        <label for="profileSelector">Profile:</label>
-        <select id="profileSelector" name="profileSelector"></select>
-        <button id="add-profile-btn">Add New Profile</button>
-        <button id="delete-profile-btn">Delete Profile</button>
-      </div>
-      <br />
-
-      <div id="profile-name-section">
-        <label for="profileName">Profile Name:</label>
-        <input type="text" id="profileName" name="profileName" />
-        <button id="save-profile-name-btn">Save Name</button>
-      </div>
-      <br />
-    </div>
-
-    <form id="config-form">
-      <label for="apiKey">OpenAI API Key:</label>
-      <br />
-      <input type="text" id="apiKey" name="apiKey" />
-      <br />
-      <br />
-
-      <label for="model">Default model:</label>
-      <br />
-      <select id="model" name="model">
-        <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
-        <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
-        <option value="gpt-4">GPT-4</option>
-        <option value="gpt-4-1106-preview">GPT-4-Turbo (beta)</option>
-      </select>
-      <br />
-      <br />
-
-      <label for="customPrompts">Custom Prompts (One per line):</label>
-      <br />
-      <textarea id="customPrompts" name="customPrompts" rows="4" cols="50"></textarea>
-      <br />
-      <br />
-
-      <label for="debug">Debug Mode:</label>
-      <input type="checkbox" id="debug" name="debug" />
-      <br />
-      <br />
-
-      <input type="submit" value="Save" />
-    </form>
 
     <script src="config.js"></script>
+    <script src="../../assets/bootstrap.bundle.min.js"></script>
   </body>
 </html>

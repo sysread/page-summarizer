@@ -1,5 +1,7 @@
 # 1.8
 - New feature: profiles!
+- TODO:
+    - debug logging is broken
 
 # 1.7
 - Fix stack craziness in form filler outer
