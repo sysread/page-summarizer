@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Config', config);
 
     if (config.profiles === undefined) {
-      config.profiles = { profiles: buildDefaultProfile() };
+      config.profiles = { default: buildDefaultProfile() };
       config.defaultProfile = 'default';
     }
 
