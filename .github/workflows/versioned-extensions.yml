@@ -13,56 +13,53 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         token: ${{ secrets.RELEASE_PAT }}
 
     - name: Check if version has changed
-      id: version_check
       run: |
-        VERSION=$(jq -r '.version' manifest.json)  # Extract version from manifest
+        VERSION=$(jq -r '.version' manifest.json)
         echo "Version in manifest: $VERSION"
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_ENV
       shell: bash
 
     - name: Get the latest tag version
-      id: latest_tag
       run: |
-        LATEST_TAG=$(git tag | grep ${{ steps.version_check.outputs.version }} || echo "not found")
+        LATEST_TAG=$(git tag | grep $VERSION || echo "not found")
         echo "Latest tag: $LATEST_TAG"
-        echo "::set-output name=latest_tag::$LATEST_TAG"
+        echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
       shell: bash
 
     - name: Compare versions or check for tag existence
-      id: compare_versions
       run: |
-        if [ "${{ steps.latest_tag.outputs.latest_tag }}" == "not found" ]; then
-          echo "::set-output name=version_changed::true"
+        if [ "$latest_tag" == "not found" ]; then
+          echo "version_changed=true" >> $GITHUB_ENV
         else
-          echo "::set-output name=version_changed::false"
+          echo "version_changed=false" >> $GITHUB_ENV
         fi
       shell: bash
 
     - name: Build Chrome Extension
-      if: steps.compare_versions.outputs.version_changed == 'true'
+      if: env.version_changed == 'true'
       run: |
-        zip -r chrome-extension-${{ steps.version_check.outputs.version }}.zip . -x "*.git*" "docs*"
+        zip -r chrome-extension-$version.zip . -x "*.git*" "docs*"
 
     - name: Generate and Push Tag
-      if: steps.compare_versions.outputs.version_changed == 'true'
+      if: env.version_changed == 'true'
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git tag -fa ${{ steps.version_check.outputs.version }} -m "Release ${{ steps.version_check.outputs.version }}"
+        git tag -fa $version -m "Release $version"
         git push https://${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git --tags --force
       shell: bash
 
     - name: Create and Upload Release
-      if: steps.compare_versions.outputs.version_changed == 'true'
+      if: env.version_changed == 'true'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.version_check.outputs.version }}
+        tag_name: $version
         token: ${{ secrets.RELEASE_PAT }}
         draft: false
         files: |
-          ./chrome-extension-${{ steps.version_check.outputs.version }}.zip
+          ./chrome-extension-$version.zip

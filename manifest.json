@@ -3,7 +3,6 @@
   "name": "Page Summarizer",
   "version": "1.9",
   "description": "Summarize web pages using OpenAI API",
-  "description": "Summarize web pages using OpenAI API",
   "permissions": [
     "activeTab",
     "storage",
