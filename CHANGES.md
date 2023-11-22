@@ -1,3 +1,7 @@
+# 1.9
+- Select instructions when clicked on to make replacing them easier
+- Bugfix: eliminated the "received empty string" error
+
 # 1.8
 - New feature: profiles!
 - Bugfix: mitigate port disconnctions while popup remains open
