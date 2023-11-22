@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'manifest.json'
 
 jobs:
   build_and_release:
     runs-on: ubuntu-latest
+    env:
+      VERSION: ''
 
     steps:
     - name: Checkout code
@@ -21,45 +21,46 @@ jobs:
       run: |
         VERSION=$(jq -r '.version' manifest.json)
         echo "Version in manifest: $VERSION"
-        echo "version=$VERSION" >> $GITHUB_ENV
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
       shell: bash
 
     - name: Get the latest tag version
       run: |
-        LATEST_TAG=$(git tag | grep $VERSION || echo "not found")
+        LATEST_TAG=$(git tag | grep "^$VERSION$" || echo "not found")
         echo "Latest tag: $LATEST_TAG"
-        echo "latest_tag=$LATEST_TAG" >> $GITHUB_ENV
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
       shell: bash
 
     - name: Compare versions or check for tag existence
       run: |
-        if [ "$latest_tag" == "not found" ]; then
-          echo "version_changed=true" >> $GITHUB_ENV
+        if [ "$LATEST_TAG" == "not found" ]; then
+          echo "VERSION_CHANGED=true" >> $GITHUB_ENV
         else
-          echo "version_changed=false" >> $GITHUB_ENV
+          echo "VERSION_CHANGED=false" >> $GITHUB_ENV
         fi
       shell: bash
 
     - name: Build Chrome Extension
-      if: env.version_changed == 'true'
+      if: env.VERSION_CHANGED == 'true'
       run: |
-        zip -r chrome-extension-$version.zip . -x "*.git*" "docs*"
+        zip -r chrome-extension-${VERSION}.zip . -x "*.git*" "docs*"
 
     - name: Generate and Push Tag
-      if: env.version_changed == 'true'
+      if: env.VERSION_CHANGED == 'true'
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git tag -fa $version -m "Release $version"
+        git tag -fa ${VERSION} -m "Release ${VERSION}"
         git push https://${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git --tags --force
       shell: bash
 
     - name: Create and Upload Release
-      if: env.version_changed == 'true'
+      if: env.VERSION_CHANGED == 'true'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: $version
+        tag_name: ${{ env.VERSION }}
         token: ${{ secrets.RELEASE_PAT }}
         draft: false
         files: |
-          ./chrome-extension-$version.zip
+          ./chrome-extension-${{ env.VERSION }}.zip
+
