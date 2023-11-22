@@ -15,6 +15,16 @@
     </style>
   </head>
   <body class="p-2">
+    <div id="header" class="mb-3 visually-hidden">
+      <h2 class="position-relative">
+        Page Summarizer
+        <span class="fs-6 text-body-secondary position-absolute top-50 end-0">
+          <strong>Source:</strong>
+          <em id="sourceUrl"></em>
+        </span>
+      </h2>
+    </div>
+
     <div class="input-group input-group-sm mb-1">
       <span class="input-group-text">Profile</span>
       <select id="profileSelector" name="profileSelector" class="form-select"></select>
@@ -37,6 +47,7 @@
 
     <div class="input-group input-group-sm mb-3">
       <button id="summarize" class="btn btn-primary btn-sm">Summarize page</button>
+      <button id="newWindow" class="btn btn-outline-primary btn-sm">&#x2197;</button>
     </div>
 
     <div id="errors"></div>

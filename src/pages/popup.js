@@ -1,8 +1,43 @@
 document.addEventListener('DOMContentLoaded', async function () {
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+  const query = new URLSearchParams(window.location.search);
+
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
   const instructions = document.getElementById('instructions');
+
+  //----------------------------------------------------------------------------
+  // Tab ID
+  //----------------------------------------------------------------------------
+  let tabId;
+
+  if (query.has('tabId')) {
+    tabId = parseInt(query.get('tabId'), 10);
+  } else {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    tabId = tabs[0].id;
+  }
+
+  document.getElementById('newWindow').addEventListener('click', async () => {
+    chrome.tabs.create({ url: 'src/pages/popup.html?tabId=' + tabId });
+  });
+
+  //----------------------------------------------------------------------------
+  // Display the header when in full screen mode, including the URL of the
+  // current page. This is only necessary when the popup is opened in a new
+  // tab, which is the case when the user clicks the "open in new window" icon,
+  // or when the popup is opened on a mobile device (kiwi browser displays
+  // extension popups as full screen tabs).
+  //----------------------------------------------------------------------------
+  async function displayHeader() {
+    document.getElementById('header').classList.remove('visually-hidden');
+    document.getElementById('sourceUrl').innerHTML = (await chrome.tabs.get(tabId)).url;
+  }
+
+  if (query.has('tabId') || isMobile) {
+    displayHeader();
+  }
 
   //----------------------------------------------------------------------------
   // Port management
@@ -94,8 +129,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   // the popup is set to a fixed size of 600px x 600px.
   //----------------------------------------------------------------------------
   function setWindowSize() {
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-
     if (isMobile) {
       document.body.style.width = 'auto';
       document.body.style.height = 'auto';
@@ -296,12 +329,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   async function requestNewSummary() {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const model = await getModel();
 
     postMessage({
       action: 'SUMMARIZE',
-      tabId: tabs[0].id,
+      tabId: tabId,
       instructions: instructions.value,
       model: model,
       profile: profileSelector.value,

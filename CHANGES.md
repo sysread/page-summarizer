@@ -1,4 +1,5 @@
 # 1.9
+- Open popup in a new tab
 - Select instructions when clicked on to make replacing them easier
 - Bugfix: eliminated the "received empty string" error
 
