@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'manifest.json'
 
 jobs:
   build_and_release:
