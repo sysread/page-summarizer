@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'manifest.json'  # Replace with the actual path to your manifest file
+      - 'manifest.json'
 
 jobs:
   build_and_release:
