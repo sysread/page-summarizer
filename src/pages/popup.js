@@ -100,8 +100,10 @@ document.addEventListener('DOMContentLoaded', async function () {
       document.body.style.width = 'auto';
       document.body.style.height = 'auto';
     } else {
-      document.body.style.width = '600px';
-      document.body.style.height = '600px';
+      const width = Math.min(780, Math.round(screen.width * 0.6 * 0.1) * 10);
+      const height = Math.min(580, Math.round(screen.height * 0.75 * 0.1) * 10);
+      document.body.style.width = `${width}px`;
+      document.body.style.height = `${height}px`;
     }
   }
 
