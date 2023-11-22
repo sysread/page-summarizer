@@ -1,4 +1,4 @@
-name: Build and Release Browser Extension
+name: Build and Release Dev Browser Extension
 
 on:
   push:
@@ -6,35 +6,36 @@ on:
       - main
 
 jobs:
-  build_and_release:
+  build_and_release_dev:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         token: ${{ secrets.RELEASE_PAT }}
 
     # Build Chrome Extension
     - name: Build Chrome Extension
       run: |
-        zip -r chrome-extension.zip . -x "*.git*" "docs*"
+        zip -r chrome-extension-dev.zip . -x "*.git*" "docs*"
 
     # Generate and push a release tag
-    - name: Generate and Push Tag
+    - name: Generate and Push Dev Tag
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git tag -fa latest -m "Latest auto-release"
+        # Using a unique tag for dev releases
+        git tag -fa dev-latest -m "Latest development auto-release"
         git push https://${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git --tags --force
       shell: bash
 
-    # Create GitHub Release and upload artifacts (using 'latest' tag)
-    - name: Create and Upload Release
+    # Create GitHub Release and upload artifacts (using 'dev-latest' tag)
+    - name: Create and Upload Dev Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: latest
+        tag_name: dev-latest
         token: ${{ secrets.RELEASE_PAT }}
         draft: false
         files: |
-          ./chrome-extension.zip
+          ./chrome-extension-dev.zip
