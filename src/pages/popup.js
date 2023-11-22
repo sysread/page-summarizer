@@ -2,10 +2,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
-  const extra = document.getElementById('extra-instructions');
-
-  const noProfilesMessage =
-    'No profiles found. Use the gear icon above or right-click the extension icon and select "Options" to create a profile.';
+  const instructions = document.getElementById('instructions');
 
   //----------------------------------------------------------------------------
   // Port management
@@ -118,22 +115,29 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   //----------------------------------------------------------------------------
-  // powers the doc hint in the extra instructions text area
+  // Powers the doc hint in the instructions text area. Provides a default when
+  // the user has not yet created a profile. Select all text in the
+  // instructions textarea when the user clicks on it.
   //----------------------------------------------------------------------------
-  const hint = 'Please summarize this web page.';
-  extra.value ||= hint;
+  const defaultInstruction = 'Please summarize this web page.';
 
-  extra.addEventListener('focus', () => {
-    if (extra.value == hint) {
-      extra.value = '';
-      extra.classList.remove('hint');
+  instructions.value ||= defaultInstruction;
+
+  instructions.addEventListener('focus', () => {
+    instructions.select();
+  });
+
+  instructions.addEventListener('focus', () => {
+    if (instructions.value == defaultInstruction) {
+      instructions.value = '';
+      instructions.classList.remove('hint');
     }
   });
 
-  extra.addEventListener('blur', () => {
-    if (extra.value == '') {
-      extra.value = hint;
-      extra.classList.add('hint');
+  instructions.addEventListener('blur', () => {
+    if (instructions.value == '') {
+      instructions.value = defaultInstruction;
+      instructions.classList.add('hint');
     }
   });
 
@@ -158,6 +162,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   // powers the profile dropdown
   //----------------------------------------------------------------------------
+  const noProfilesMessage =
+    'No profiles found. Use the gear icon above or right-click the extension ' +
+    'icon and select "Options" to create a profile.';
 
   // Load profiles and set the current profile in the dropdown
   async function loadProfiles() {
@@ -183,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     setModel(profiles[defaultProfile].model);
   }
 
-  // Update the model and extra instructions when the profile changes
+  // Update the model and instructions when the profile changes
   async function selectProfile() {
     const selectedProfileName = profileSelector.value;
     const config = await chrome.storage.sync.get(['defaultProfile', 'profiles']);
@@ -194,26 +201,26 @@ document.addEventListener('DOMContentLoaded', async function () {
       setModel(selectedProfile.model);
 
       // Update "custom instructions" textarea with the profile's custom prompts
-      extra.value = selectedProfile.customPrompts.join('\n');
+      instructions.value = selectedProfile.customPrompts.join('\n');
 
       // Make sure to handle the case when there are no custom prompts
-      if (!extra.value) {
-        extra.value = hint;
-        extra.classList.add('hint');
+      if (!instructions.value) {
+        instructions.value = hint;
+        instructions.classList.add('hint');
       } else {
         // Remove the hint class if the custom prompts are not empty
-        extra.classList.remove('hint');
+        instructions.classList.remove('hint');
       }
     } else if (selectedProfileName === '') {
       reportError(noProfilesMessage);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
-      extra.value = hint; // Fallback instructions
-      extra.classList.add('hint');
+      instructions.value = hint; // Fallback instructions
+      instructions.classList.add('hint');
     } else {
       reportError(`Profile "${selectedProfileName}" not found.`);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
-      extra.value = hint; // Fallback instructions
-      extra.classList.add('hint');
+      instructions.value = hint; // Fallback instructions
+      instructions.classList.add('hint');
     }
   }
 
@@ -237,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   function format(text) {
     if (text == null || text.length == 0) {
-      return 'Received empty string';
+      return '';
     }
 
     return marked.marked(text);
@@ -293,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     postMessage({
       action: 'SUMMARIZE',
       tabId: tabs[0].id,
-      extra: extra.value,
+      instructions: instructions.value,
       model: model,
       profile: profileSelector.value,
     });

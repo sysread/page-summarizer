@@ -1,7 +1,7 @@
 import { fetchAndStream } from './gpt.js';
 import { loadSupportScripts } from './util.js';
 
-async function fetchAndStreamFormFill(port, prompt, extra) {
+async function fetchAndStreamFormFill(port, prompt, instructions) {
   let messages = [
     {
       role: 'system',
@@ -9,10 +9,10 @@ async function fetchAndStreamFormFill(port, prompt, extra) {
     },
   ];
 
-  if (extra != null && extra.length > 0) {
+  if (instructions != null && instructions.length > 0) {
     messages.push({
       role: 'user',
-      content: `For context, the page contains the following text: ${extra}`,
+      content: `For context, the page contains the following text: ${instructions}`,
     });
   }
 
@@ -45,7 +45,7 @@ export function connectFormFiller() {
 
       port.onMessage.addListener((msg) => {
         if (msg.action == 'GET_COMPLETION') {
-          fetchAndStreamFormFill(port, msg.text, msg.extra);
+          fetchAndStreamFormFill(port, msg.text, msg.instructions);
         }
       });
     }

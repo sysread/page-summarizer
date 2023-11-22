@@ -136,7 +136,7 @@ if (chrome && chrome.runtime) {
           port.postMessage({
             action: 'GET_COMPLETION',
             text: instructions,
-            extra: contents,
+            instructions: contents,
           });
         }
 
