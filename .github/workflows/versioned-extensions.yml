@@ -1,11 +1,11 @@
-name: Build and Release Versioned Browser Extension
+name: Versioned Build and Release Browser Extension
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'path/to/manifest.json'  # Replace with the actual path to your manifest file
+      - 'manifest.json'  # Replace with the actual path to your manifest file
 
 jobs:
   build_and_release:
@@ -20,7 +20,7 @@ jobs:
     - name: Check if version has changed
       id: version_check
       run: |
-        VERSION=$(jq -r '.version' path/to/manifest.json)  # Extract version from manifest
+        VERSION=$(jq -r '.version' manifest.json)  # Extract version from manifest
         echo "Version in manifest: $VERSION"
         echo "::set-output name=version::$VERSION"
       shell: bash
@@ -28,15 +28,15 @@ jobs:
     - name: Get the latest tag version
       id: latest_tag
       run: |
-        LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        LATEST_TAG=$(git tag | grep ${{ steps.version_check.outputs.version }} || echo "not found")
         echo "Latest tag: $LATEST_TAG"
         echo "::set-output name=latest_tag::$LATEST_TAG"
       shell: bash
 
-    - name: Compare versions
+    - name: Compare versions or check for tag existence
       id: compare_versions
       run: |
-        if [ "${{ steps.version_check.outputs.version }}" != "${{ steps.latest_tag.outputs.latest_tag }}" ]; then
+        if [ "${{ steps.latest_tag.outputs.latest_tag }}" == "not found" ]; then
           echo "::set-output name=version_changed::true"
         else
           echo "::set-output name=version_changed::false"
@@ -66,4 +66,3 @@ jobs:
         draft: false
         files: |
           ./chrome-extension-${{ steps.version_check.outputs.version }}.zip
-
