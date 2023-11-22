@@ -1,11 +1,18 @@
 document.addEventListener('DOMContentLoaded', async function () {
-  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
   const query = new URLSearchParams(window.location.search);
 
   const target = document.getElementById('summary');
   const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
   const instructions = document.getElementById('instructions');
+
+  //----------------------------------------------------------------------------
+  // Mobile device detection
+  //----------------------------------------------------------------------------
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+  const isMobileUserAgent = /Mobi|Android/i.test(navigator.userAgent);
+  const isSmallScreen = window.innerWidth < 768;
+  const isMobile = isTouchDevice && (isMobileUserAgent || isSmallScreen);
 
   //----------------------------------------------------------------------------
   // Tab ID
@@ -32,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   async function displayHeader() {
     document.getElementById('header').classList.remove('visually-hidden');
-    document.getElementById('sourceUrl').innerHTML = (await chrome.tabs.get(tabId)).url;
+    document.getElementById('sourceUrl').href = (await chrome.tabs.get(tabId)).url;
   }
 
   if (query.has('tabId') || isMobile) {
@@ -141,6 +148,60 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   setWindowSize();
+
+  //----------------------------------------------------------------------------
+  // Extracting text from PDF files
+  //----------------------------------------------------------------------------
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '../assets/pdf.worker.mjs';
+
+  async function extractTextFromPDF(url) {
+    const pdf = await pdfjsLib.getDocument(url).promise;
+    let content = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const text = await page.getTextContent();
+      content += text.items.map((item) => item.str).join(' ');
+    }
+
+    return content;
+  }
+
+  function isPDF(url) {
+    return url.toLowerCase().endsWith('.pdf');
+  }
+
+  //----------------------------------------------------------------------------
+  // Extracting text from anything supported
+  //----------------------------------------------------------------------------
+  async function getReferenceText() {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = tabs[0].url;
+
+    if (isPDF(url)) {
+      return extractTextFromPDF(url);
+    } else {
+      return new Promise((resolve, reject) => {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId },
+            func: () => document.body.innerText,
+          },
+          (results) => {
+            if (results === undefined || results.length == 0) {
+              reject('Unable to retrieve page contents.');
+            }
+
+            if (results[0].result == '') {
+              reject('Page contents are empty.');
+            }
+
+            resolve(results[0].result);
+          },
+        );
+      });
+    }
+  }
 
   //----------------------------------------------------------------------------
   // Powers the button that opens the options page
@@ -330,13 +391,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   async function requestNewSummary() {
     const model = await getModel();
+    const content = await getReferenceText();
 
     postMessage({
       action: 'SUMMARIZE',
-      tabId: tabId,
       instructions: instructions.value,
       model: model,
       profile: profileSelector.value,
+      content: content,
     });
   }
 

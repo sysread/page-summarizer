@@ -32,40 +32,10 @@ export async function fetchAndStreamSummary(port, content, instructions, model, 
 export function connectPageSummarizer() {
   chrome.runtime.onConnect.addListener((port) => {
     if (port.name == 'summarize') {
-      port.onMessage.addListener(async (msg) => {
+      port.onMessage.addListener((msg) => {
         if (msg.action == 'SUMMARIZE') {
-          const tabId = msg.tabId;
-          const instructions = msg.instructions;
-          const model = msg.model;
-          const profile = msg.profile;
-          const tab = await chrome.tabs.get(tabId);
-
-          if (tab.url.startsWith('chrome://')) {
-            port.postMessage({ action: 'GPT_ERROR', error: 'Cannot summarize internal browser pages.' });
-            return;
-          }
-
-          chrome.scripting.executeScript(
-            {
-              target: { tabId },
-              func: () => {
-                return document.body.innerText;
-              },
-            },
-            (result) => {
-              if (result === undefined || result.length == 0) {
-                port.postMessage({ action: 'GPT_ERROR', error: 'Unable to retrieve page contents.' });
-                return;
-              }
-
-              if (result[0].result == '') {
-                port.postMessage({ action: 'GPT_ERROR', error: 'Page contents are empty.' });
-                return;
-              }
-
-              fetchAndStreamSummary(port, result[0].result, instructions, model, profile);
-            },
-          );
+          const { content, instructions, model, profile } = msg;
+          fetchAndStreamSummary(port, content, instructions, model, profile);
         }
       });
     }

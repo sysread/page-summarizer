@@ -1,6 +1,7 @@
 # 1.9
-- Open popup in a new tab
-- Select instructions when clicked on to make replacing them easier
+- New feature: Summarize PDFs
+- New feature: Open popup in a new tab
+- New feature: Select instructions when clicked on to make replacing them easier
 - Bugfix: eliminated the "received empty string" error
 
 # 1.8

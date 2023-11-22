@@ -14,6 +14,15 @@ export async function connectSelectionSummarizer() {
   // Listen for clicks on the context menu item
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'summarizeSelectedText') {
+      if (tab.id == -1) {
+        return;
+      }
+
+      if (tab.url.endsWith('.pdf')) {
+        alert('Cannot summarize selected text from a PDF. Please use the extension popup instead.');
+        return;
+      }
+
       await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/selection_summarizer.js']);
 
       const text = info.selectionText;
