@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       // Make sure to handle the case when there are no custom prompts
       if (!instructions.value) {
-        instructions.value = hint;
+        instructions.value = defaultInstruction;
         instructions.classList.add('hint');
       } else {
         // Remove the hint class if the custom prompts are not empty
@@ -310,12 +310,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else if (selectedProfileName === '') {
       reportError(noProfilesMessage);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
-      instructions.value = hint; // Fallback instructions
+      instructions.value = defaultInstruction; // Fallback instructions
       instructions.classList.add('hint');
     } else {
       reportError(`Profile "${selectedProfileName}" not found.`);
       setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
-      instructions.value = hint; // Fallback instructions
+      instructions.value = defaultInstruction; // Fallback instructions
       instructions.classList.add('hint');
     }
   }
