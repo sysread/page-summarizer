@@ -1,3 +1,7 @@
+# 1.9.1
+- Bugfix: fix bug in how we determine if we are running on a mobile device
+- Bugfix: fix undeclared variable error when no instructions are set
+
 # 1.9
 - New feature: Summarize PDFs
 - New feature: Open popup in a new tab
