@@ -115,6 +115,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    // Not an error - the user probably cancelled
+    if (name == '' || name == null) {
+      return;
+    }
+
     config.profiles[name] = buildDefaultProfile();
     await chrome.storage.sync.set(config);
 
