@@ -1,6 +1,7 @@
 # 1.9.1
 - Bugfix: fix bug in how we determine if we are running on a mobile device
 - Bugfix: fix undeclared variable error when no instructions are set
+- Bugfix: fix creation of "null" profile when user escapes out of prompt
 
 # 1.9
 - New feature: Summarize PDFs
