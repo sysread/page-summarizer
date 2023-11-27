@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
   const isMobileUserAgent = /Mobi|Android/i.test(navigator.userAgent);
-  const isSmallScreen = window.innerWidth < 768;
+  const isSmallScreen = screen.width < 768;
   const isMobile = isTouchDevice && (isMobileUserAgent || isSmallScreen);
 
   //----------------------------------------------------------------------------
