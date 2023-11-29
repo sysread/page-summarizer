@@ -31,6 +31,40 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   //----------------------------------------------------------------------------
+  // Copy summary to clipboard
+  //----------------------------------------------------------------------------
+  const copySummaryButton = document.getElementById('copySummary');
+
+  function enableCopyButton() {
+    copySummaryButton.classList.remove('btn-outline-secondary');
+    copySummaryButton.classList.add('btn-outline-primary');
+    copySummaryButton.disabled = false;
+  }
+
+  function disableCopyButton() {
+    copySummaryButton.classList.remove('btn-outline-primary');
+    copySummaryButton.classList.add('btn-outline-secondary');
+    copySummaryButton.disabled = true;
+  }
+
+  window.setInterval(() => {
+    if (lastMessage) {
+      enableCopyButton();
+    } else {
+      disableCopyButton();
+    }
+  }, 500);
+
+  copySummaryButton.addEventListener('click', async () => {
+    if (lastMessage) {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const urlOfPage = tabs[0].url;
+      const formattedText = `Summary of ${urlOfPage}:\n\n${lastMessage}`;
+      await navigator.clipboard.writeText(formattedText);
+    }
+  });
+
+  //----------------------------------------------------------------------------
   // Display the header when in full screen mode, including the URL of the
   // current page. This is only necessary when the popup is opened in a new
   // tab, which is the case when the user clicks the "open in new window" icon,
@@ -408,6 +442,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       setModel(result.model);
 
       updateSummary(marked.marked(result.summary));
+
+      lastMessage = result.summary;
 
       // When restoring a summary, force the page to scroll to the top
       requestAnimationFrame(() => {
