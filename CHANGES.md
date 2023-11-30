@@ -1,3 +1,6 @@
+# 1.10.0 (upcoming)
+- New feature: copy summary to clipboard
+
 # 1.9.1
 - Bugfix: fix bug in how we determine if we are running on a mobile device
 - Bugfix: fix undeclared variable error when no instructions are set
