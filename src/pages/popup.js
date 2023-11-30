@@ -60,7 +60,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       const urlOfPage = tabs[0].url;
       const formattedText = `Summary of ${urlOfPage}:\n\n${lastMessage}`;
-      await navigator.clipboard.writeText(formattedText);
+
+      try {
+        await navigator.clipboard.writeText(formattedText);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     }
   });
 
@@ -209,8 +214,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Extracting text from anything supported
   //----------------------------------------------------------------------------
   async function getReferenceText() {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tabs[0].url;
+    const url = (await chrome.tabs.get(tabId)).url;
 
     if (isPDF(url)) {
       return extractTextFromPDF(url);
