@@ -1,3 +1,6 @@
+# 1.9.3
+- Add link from config to OpenAI API keys page
+
 # 1.9.2
 - Minor feature: copy summary to clipboard
 - Bugfix: fails to summarize from pop-out window

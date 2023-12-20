@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Powers the button that opens the options page
   //----------------------------------------------------------------------------
   document.getElementById('options').addEventListener('click', function () {
-    chrome.runtime.openOptionsPage(); // if using options_page in manifest
+    chrome.runtime.openOptionsPage();
   });
 
   //----------------------------------------------------------------------------

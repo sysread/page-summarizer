@@ -228,6 +228,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await saveConfig();
   });
 
+  // Powers the button that opens the OpenAI API page
+  document.getElementById('open-api-keys').addEventListener('click', function () {
+    chrome.tabs.create({ url: 'https://platform.openai.com/api-keys' });
+  });
+
   // Load config on page load
   await reloadConfig();
 });
