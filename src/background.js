@@ -40,5 +40,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       // Optionally, clear the old configuration keys if you don't want to keep them anymore
       await chrome.storage.sync.remove(['model', 'customPrompts']);
     }
+
+    // Update models to change "gpt-4-1106-preview" to "gpt-4-turbo-preview"
+    const config = await chrome.storage.sync.get(['profiles']);
+
+    for (const profileName of Object.keys(config.profiles)) {
+      const profile = config.profiles[profileName];
+
+      if (profile.model === 'gpt-4-1106-preview') {
+        profile.model = 'gpt-4-turbo-preview';
+      }
+    }
+
+    await chrome.storage.sync.set(config);
   }
 });

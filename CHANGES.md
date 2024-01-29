@@ -1,5 +1,6 @@
 # 1.9.3
 - Add link from config to OpenAI API keys page
+- Update GPT-4 preview model to latest
 
 # 1.9.2
 - Minor feature: copy summary to clipboard
