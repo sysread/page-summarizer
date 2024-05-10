@@ -1,3 +1,6 @@
+# 1.9.5
+- Fix error handling bug when unable to retrieve page contents
+
 # 1.9.4
 - Update models to latest
 

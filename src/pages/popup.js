@@ -227,11 +227,11 @@ document.addEventListener('DOMContentLoaded', async function () {
           },
           (results) => {
             if (results === undefined || results.length == 0) {
-              reject('Unable to retrieve page contents.');
+              reject('Unable to retrieve page contents or page contents are empty.');
             }
 
-            if (results[0].result == '') {
-              reject('Page contents are empty.');
+            if (results[0].result === undefined || results[0].result == '') {
+              reject('Unable to retrieve page contents or page contents are empty.');
             }
 
             resolve(results[0].result);
@@ -427,17 +427,30 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
   }
 
+  function clearSummary() {
+    requestAnimationFrame(() => {
+      document.getElementById('summaryCard').classList.add('visually-hidden');
+      target.innerHTML = '';
+    });
+  }
+
   async function requestNewSummary() {
     const model = await getModel();
-    const content = await getReferenceText();
-
-    postMessage({
-      action: 'SUMMARIZE',
-      instructions: instructions.value,
-      model: model,
-      profile: profileSelector.value,
-      content: content,
-    });
+    const content = await getReferenceText()
+      .then((text) => {
+        postMessage({
+          action: 'SUMMARIZE',
+          instructions: instructions.value,
+          model: model,
+          profile: profileSelector.value,
+          content: text,
+        });
+      })
+      .catch((error) => {
+        reportError(error);
+        clearSummary();
+        working = false;
+      });
   }
 
   // Restore the last page summary when the popup is opened
