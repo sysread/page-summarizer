@@ -1,3 +1,6 @@
+# 1.9.6
+- Add support for newly released model, "gpt-4o"
+
 # 1.9.5
 - Fix error handling bug when unable to retrieve page contents
 
