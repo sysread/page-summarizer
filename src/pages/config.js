@@ -233,6 +233,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.tabs.create({ url: 'https://platform.openai.com/api-keys' });
   });
 
+  // Powers the button that exports the current profile config
+  document.getElementById('export-profiles-btn').addEventListener('click', function () {
+    if (!config) {
+      showStatus('No profiles to export.', 'danger');
+      return;
+    }
+
+    const profiles = config.profiles;
+    if (Object.keys(profiles).length === 0) {
+      showStatus('No profiles to export.', 'danger');
+      return;
+    }
+
+    const configStr = JSON.stringify(profiles, null, 2);
+    const blob = new Blob([configStr], { type: 'application/json' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'PageSummarizeProfiles.json';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showSuccess('Profiles exported successfully.');
+  });
+
+  // Powers the button that imports the profile config file (part 1)
+  document.getElementById('import-profiles-btn').addEventListener('click', function () {
+    document.getElementById('import-profiles-file').click(); // Trigger file input
+  });
+
+  // Powers the button that imports the profile config file (part 2)
+  document.getElementById('import-profiles-file').addEventListener('change', function (event) {
+    const fileReader = new FileReader();
+
+    // Once the file is read, import the profiles into the current config
+    fileReader.onload = async function () {
+      try {
+        const importedProfiles = JSON.parse(fileReader.result);
+        const profiles = { ...config.profiles, ...importedProfiles };
+
+        config.profiles = profiles;
+        await chrome.storage.sync.set(config);
+        await reloadConfig();
+        showSuccess('Profiles imported successfully.');
+      } catch (error) {
+        showError('Failed to import profiles: ' + error.message);
+      }
+    };
+
+    // Read the file, triggering the above callback
+    const file = event.target.files[0];
+    if (file) {
+      fileReader.readAsText(file);
+    }
+  });
+
   // Load config on page load
   await reloadConfig();
 });

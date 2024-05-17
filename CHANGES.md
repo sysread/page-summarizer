@@ -1,3 +1,6 @@
+# 1.9.7
+- New feature: import/export profiles
+
 # 1.9.6
 - Add support for newly released model, "gpt-4o"
 
