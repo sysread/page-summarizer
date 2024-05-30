@@ -1,3 +1,6 @@
+# 1.9.8
+- Bugfix: fix bug causing the incorrect summary to be remembered when using the popup in a new window/tab
+
 # 1.9.7
 - New feature: import/export profiles
 

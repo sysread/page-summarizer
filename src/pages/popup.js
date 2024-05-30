@@ -26,9 +26,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     tabId = tabs[0].id;
   }
 
+  // Assigns the tabId to the new window link, so that when you open the popup
+  // in a new window, the new window will have the same tabId.
   document.getElementById('newWindow').addEventListener('click', async () => {
     chrome.tabs.create({ url: 'src/pages/popup.html?tabId=' + tabId });
   });
+
+  // Returns the URL of the original tab, identified by the global tabId.
+  async function getOriginalTabUrl() {
+    const tab = await chrome.tabs.get(tabId);
+    return tab.url;
+  }
 
   //----------------------------------------------------------------------------
   // Copy summary to clipboard
@@ -385,8 +393,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   async function restoreSummary() {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tabs[0].url;
+    const url = await getOriginalTabUrl();
     const config = await chrome.storage.local.get('results');
 
     if (config.results && config.results[url]) {
@@ -405,8 +412,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   async function setSummary(summary, model) {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tabs[0].url;
+    const url = await getOriginalTabUrl();
     const config = await chrome.storage.local.get('results');
 
     let results = config.results || {};
