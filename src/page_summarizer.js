@@ -7,8 +7,11 @@ export async function fetchAndStreamSummary(port, content, instructions, model, 
     profile = defaultProfile;
   }
 
+  const profileKey = `profile__${profile}`;
+  const profileData = await chrome.storage.sync.get(profileKey);
+
   if (!instructions) {
-    instructions = profiles[profile].customPrompts.join('\n');
+    instructions = profileData[profileKey].customPrompts.join('\n');
   }
 
   let messages = [

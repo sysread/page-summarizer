@@ -289,8 +289,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   async function setModel(model = null) {
     if (model == null) {
       const profileName = profileSelector.value;
-      const config = await chrome.storage.sync.get('profiles');
-      modelDropdown.value = config.profiles[profileName].model;
+      const profileKey = `profile__${profileName}`;
+      const profileData = await chrome.storage.sync.get(profileKey);
+      modelDropdown.value = profileData[profileKey].model;
     } else {
       modelDropdown.value = model;
     }
@@ -317,28 +318,35 @@ document.addEventListener('DOMContentLoaded', async function () {
       return;
     }
 
-    const sortedKeys = Object.keys(profiles).sort((a, b) => {
+    const sortedProfiles = profiles.sort((a, b) => {
       if (a === defaultProfile) return -1;
       if (b === defaultProfile) return 1;
       return a.localeCompare(b);
     });
 
-    sortedKeys.forEach((profileName) => {
+    sortedProfiles.forEach(async (profileName) => {
       const option = new Option(profileName, profileName);
       profileSelector.add(option);
+
+      if (profileName === defaultProfile) {
+        const profileKey = `profile__${profileName}`;
+        const profileData = await chrome.storage.sync.get(profileKey);
+        setModel(profileData[profileKey].model);
+      }
     });
 
     profileSelector.value = defaultProfile;
-    setModel(profiles[defaultProfile].model);
   }
 
   // Update the model and instructions when the profile changes
+
   async function selectProfile() {
     const selectedProfileName = profileSelector.value;
-    const config = await chrome.storage.sync.get(['defaultProfile', 'profiles']);
+    const profileKey = `profile__${selectedProfileName}`;
+    const profileData = await chrome.storage.sync.get(profileKey);
 
-    if (config.profiles && config.profiles[selectedProfileName]) {
-      const selectedProfile = config.profiles[selectedProfileName];
+    if (profileData[profileKey]) {
+      const selectedProfile = profileData[profileKey];
 
       setModel(selectedProfile.model);
 

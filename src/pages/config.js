@@ -28,9 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       apiKey: '',
       debug: false,
       defaultProfile: 'default',
-      profiles: {
-        default: buildDefaultProfile(),
-      },
+      profiles: ['default'],
+      profile__default: buildDefaultProfile(),
     };
   }
 
@@ -63,18 +62,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // The user is changing the current profile's name
     if (currentProfile !== null && name !== currentProfile) {
-      delete config.profiles[currentProfile];
-      config.profiles[name] = newProfile;
+      config.profiles = config.profiles.filter((profile) => profile !== currentProfile);
+      delete config[`profile__${currentProfile}`];
+      config.profiles.push(name);
+      config[`profile__${name}`] = newProfile;
       currentProfile = name;
     }
     // The user is adding a new profile
     else if (currentProfile === null) {
       currentProfile = name;
-      config.profiles[name] = newProfile;
+      config.profiles.push(name);
+      config[`profile__${name}`] = newProfile;
     }
     // The user is updating the current profile
     else {
-      config.profiles[name] = newProfile;
+      config[`profile__${name}`] = newProfile;
     }
 
     config.debug = debug;
@@ -99,9 +101,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (confirm(`Are you sure you want to delete "${currentProfile}"? This cannot be undone.`)) {
-      delete config.profiles[currentProfile];
+      // remove from list of profile names
+      config.profiles = config.profiles.filter((profile) => profile !== currentProfile);
+
+      // remove individual profile's config
+      delete config[`profile__${currentProfile}`];
+
+      // remove from the ui
       profileSelector.remove(profileSelector.selectedIndex);
+
+      // save the new config
       await chrome.storage.sync.set(config);
+
       showSuccess(`Profile "${currentProfile}" deleted.`);
       await selectProfile(config.defaultProfile);
     }
@@ -120,7 +131,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    config.profiles[name] = buildDefaultProfile();
+    config.profiles.push(name);
+    config[`profile__${name}`] = buildDefaultProfile();
     await chrome.storage.sync.set(config);
 
     addOption(name);
@@ -132,12 +144,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function reloadConfig() {
-    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'profiles']);
+    const profileKeys = (await chrome.storage.sync.get('profiles')).profiles.map((name) => `profile__${name}`);
+    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'profiles', ...profileKeys]);
     console.log('Config', config);
 
     if (config.profiles === undefined) {
-      config.profiles = { default: buildDefaultProfile() };
+      config.profiles = ['default'];
       config.defaultProfile = 'default';
+      config[`profile__default`] = buildDefaultProfile();
     }
 
     // Update state variables
@@ -149,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load profiles into the dropdown and select the current profile.
     // Sort the profiles such that the default profile is always first.
-    const sortedProfileNames = Object.keys(config.profiles).sort((a, b) => {
+    const sortedProfileNames = config.profiles.sort((a, b) => {
       if (a === config.defaultProfile) return -1;
       if (b === config.defaultProfile) return 1;
       return a.localeCompare(b);
@@ -173,8 +187,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update the form inputs with profile values
   function selectProfile(profile) {
-    if (profile in config.profiles) {
-      const data = config.profiles[profile];
+    if (config.profiles.includes(profile)) {
+      const data = config[`profile__${profile}`];
 
       currentProfile = profile;
       profileSelector.value = profile;
@@ -240,7 +254,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const profiles = config.profiles;
+    const profiles = {};
+    config.profiles.forEach((name) => {
+      profiles[name] = config[`profile__${name}`];
+    });
+
     if (Object.keys(profiles).length === 0) {
       showStatus('No profiles to export.', 'danger');
       return;
@@ -273,11 +291,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     fileReader.onload = async function () {
       try {
         const importedProfiles = JSON.parse(fileReader.result);
-        const profiles = { ...config.profiles, ...importedProfiles };
+        const importedProfileNames = Object.keys(importedProfiles);
 
-        config.profiles = profiles;
+        config.profiles = [...new Set([...config.profiles, ...importedProfileNames])];
+
+        importedProfileNames.forEach((name) => {
+          config[`profile__${name}`] = importedProfiles[name];
+        });
+
         await chrome.storage.sync.set(config);
         await reloadConfig();
+
         showSuccess('Profiles imported successfully.');
       } catch (error) {
         showError('Failed to import profiles: ' + error.message);

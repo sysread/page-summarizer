@@ -1,3 +1,6 @@
+# 1.9.9
+- Improvement: better space management for large profile prompts
+
 # 1.9.8
 - Bugfix: fix bug causing the incorrect summary to be remembered when using the popup in a new window/tab
 

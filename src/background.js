@@ -6,6 +6,7 @@ import {
   updateConfigToUseProfiles_20231117,
   updateModelNaming_20240129,
   updateModelNaming_20240423,
+  updateProfileStructure_20240620,
 } from './compat.js';
 
 // Summarize page
@@ -23,5 +24,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await updateConfigToUseProfiles_20231117();
     await updateModelNaming_20240129();
     await updateModelNaming_20240423();
+    await updateProfileStructure_20240620();
   }
 });

@@ -6,11 +6,25 @@ async function updateConfig(keys, callback) {
 
 async function updateModelName(from, to) {
   await updateConfig(['profiles'], async (config) => {
-    for (const profileName of Object.keys(config.profiles)) {
-      const profile = config.profiles[profileName];
+    if (Array.isArray(config.profiles)) {
+      // New structure: profiles is an array
+      for (const profileName of config.profiles) {
+        const profileKey = `profile__${profileName}`;
+        const profileData = await chrome.storage.sync.get(profileKey);
 
-      if (profile.model === from) {
-        profile.model = to;
+        if (profileData[profileKey].model === from) {
+          profileData[profileKey].model = to;
+          await chrome.storage.sync.set({ [profileKey]: profileData[profileKey] });
+        }
+      }
+    } else {
+      // Old structure: profiles is an object
+      for (const profileName of Object.keys(config.profiles)) {
+        const profile = config.profiles[profileName];
+
+        if (profile.model === from) {
+          profile.model = to;
+        }
       }
     }
 
@@ -54,4 +68,26 @@ export async function updateModelNaming_20240129() {
 // Update models to change "gpt-4-turbo-preview" to "gpt-4-turbo"
 export async function updateModelNaming_20240423() {
   await updateModelName('gpt-4-turbo-preview', 'gpt-4-turbo');
+}
+
+// Move profiles from config.profiles (object) to config.profiles (array),
+// where each name corresponds to a key in the root config object, prefixed by
+// "profile__".
+export async function updateProfileStructure_20240620() {
+  await updateConfig(['profiles'], async (oldConfig) => {
+    if (Array.isArray(oldConfig.profiles)) {
+      return oldConfig;
+    }
+
+    const newConfig = {};
+
+    for (const name of Object.keys(oldConfig.profiles)) {
+      const profile = oldConfig.profiles[name];
+      newConfig['profile__' + name] = profile;
+    }
+
+    newConfig.profiles = Object.keys(oldConfig.profiles);
+
+    return newConfig;
+  });
 }

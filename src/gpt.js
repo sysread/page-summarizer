@@ -146,7 +146,10 @@ function gptDone(port, summary) {
 //------------------------------------------------------------------------------
 export async function fetchAndStream(port, messages, options = {}) {
   const config = await chrome.storage.sync.get(['apiKey', 'profiles', 'defaultProfile']);
-  const profile = config.profiles[options.profile || config.defaultProfile];
+  const profileName = options.profile || config.defaultProfile;
+  const profileKey = `profile__${profileName}`;
+  const profileData = await chrome.storage.sync.get(profileKey);
+  const profile = profileData[profileKey];
 
   let connected = true;
 
