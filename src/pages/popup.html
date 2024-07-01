@@ -20,25 +20,24 @@
         Page Summarizer
 
         <span class="fs-6 text-body-secondary position-absolute top-0 end-0">
-          <a id="sourceUrl">Source</a>
+          <a id="sourceUrl">[source]</a>
         </span>
       </h2>
     </div>
 
-    <div class="input-group input-group-sm mb-1">
+    <div class="btn-group mb-1">
       <span class="input-group-text">Profile</span>
-      <select id="profileSelector" name="profileSelector" class="form-select"></select>
-      <button id="options" class="btn btn-outline-secondary" title="Click to open settings">&#x2699;</button>
+      <div class="d-flex flex-wrap mb-1" id="profileContainer"></div>
     </div>
 
     <div class="input-group input-group-sm mb-2">
       <span class="input-group-text">Model</span>
       <select id="model" name="model" class="form-select">
-        <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
-        <option value="gpt-3.5-turbo-16k" selected>GPT-3.5-Turbo-16K</option>
-        <option value="gpt-4">GPT-4</option>
-        <option value="gpt-4-turbo">GPT-4-Turbo</option>
-        <option value="gpt-4o">GPT-4o (omni)</option>
+        <option value="gpt-3.5-turbo">GPT 3.5 Turbo</option>
+        <option value="gpt-3.5-turbo-16k" selected>GPT 3.5 Turbo 16K</option>
+        <option value="gpt-4">GPT 4</option>
+        <option value="gpt-4-turbo">GPT 4 Turbo</option>
+        <option value="gpt-4o">GPT 4o</option>
       </select>
     </div>
 
@@ -47,9 +46,10 @@
     </div>
 
     <div class="input-group input-group-sm mb-3">
-      <button id="summarize" class="btn btn-primary btn-sm">Summarize page</button>
-      <button id="newWindow" class="btn btn-outline-primary btn-sm">&#x2197;</button>
-      <button id="copySummary" class="btn btn-outline-secondary btn-sm" disabled>&#x1F4CB;</button>
+      <button id="summarize" class="btn btn-primary btn-sm" title="Summarize page">Summarize page</button>
+      <button id="newWindow" class="btn btn-outline-primary btn-sm" title="Open in new window">&#x2197;</button>
+      <button id="copySummary" class="btn btn-outline-primary btn-sm" disabled title="Copy summary">&#x1F4CB;</button>
+      <button id="options" class="btn btn-outline-primary btn-sm" title="Settings">&#x2699;</button>
     </div>
 
     <div id="errors"></div>

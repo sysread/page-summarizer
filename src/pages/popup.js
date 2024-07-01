@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   const query = new URLSearchParams(window.location.search);
 
   const target = document.getElementById('summary');
-  const profileSelector = document.getElementById('profileSelector');
   const modelDropdown = document.getElementById('model');
   const instructions = document.getElementById('instructions');
+  const profileContainer = document.getElementById('profileContainer');
 
   //----------------------------------------------------------------------------
   // Mobile device detection
@@ -288,8 +288,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   async function setModel(model = null) {
     if (model == null) {
-      const profileName = profileSelector.value;
-      const profileKey = `profile__${profileName}`;
+      const profileKey = `profile__${currentProfile}`;
       const profileData = await chrome.storage.sync.get(profileKey);
       modelDropdown.value = profileData[profileKey].model;
     } else {
@@ -309,7 +308,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     'No profiles found. Use the gear icon above or right-click the extension ' +
     'icon and select "Options" to create a profile.';
 
-  // Load profiles and set the current profile in the dropdown
+  let currentProfile = '';
+
+  // Update profile button UI and event listeners
   async function loadProfiles() {
     const [{ defaultProfile, profiles }, { lastUsedProfile }] = await Promise.all([
       chrome.storage.sync.get(['defaultProfile', 'profiles']),
@@ -327,9 +328,20 @@ document.addEventListener('DOMContentLoaded', async function () {
       return a.localeCompare(b);
     });
 
+    // Clear existing buttons
+    profileContainer.innerHTML = '';
+
     sortedProfiles.forEach(async (profileName) => {
-      const option = new Option(profileName, profileName);
-      profileSelector.add(option);
+      const button = document.createElement('button');
+      button.className = 'profile-button btn btn-sm btn-outline-secondary text-nowrap';
+      button.textContent = profileName;
+
+      // Add click event listener for profile buttons
+      button.addEventListener('click', async () => {
+        await selectProfile(profileName);
+      });
+
+      profileContainer.appendChild(button);
 
       if (profileName === lastUsedProfile) {
         const profileKey = `profile__${profileName}`;
@@ -338,18 +350,38 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
 
-    profileSelector.value = lastUsedProfile || defaultProfile;
+    // Automatically select a profile if necessary
+    if (lastUsedProfile) {
+      console.log('LAST USED PROFILE', lastUsedProfile);
+      await selectProfile(lastUsedProfile);
+    } else if (defaultProfile) {
+      console.log('DEFAULT PROFILE', defaultProfile);
+      await selectProfile(defaultProfile);
+    }
   }
 
   // Update the model and instructions when the profile changes
-  async function selectProfile() {
-    const selectedProfileName = profileSelector.value;
+  async function selectProfile(selectedProfileName) {
+    currentProfile = selectedProfileName;
+
+    // Update the active profile button classes
+    const buttons = profileContainer.getElementsByClassName('btn');
+
+    for (const button of buttons) {
+      if (button.textContent === currentProfile) {
+        button.className = 'btn btn-sm mx-1 text-nowrap btn-outline-primary active';
+      } else {
+        button.className = 'btn btn-sm mx-1 text-nowrap btn-outline-secondary';
+      }
+    }
 
     // Save the selected profile name locally
     await chrome.storage.local.set({ lastUsedProfile: selectedProfileName });
 
     const profileKey = `profile__${selectedProfileName}`;
     const profileData = await chrome.storage.sync.get(profileKey);
+
+    console.log('PROFILE', profileKey);
 
     if (profileData[profileKey]) {
       const selectedProfile = profileData[profileKey];
@@ -382,10 +414,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Initial call to load profiles
   await loadProfiles();
-  await selectProfile();
 
   // Update profile when the selector changes
-  profileSelector.addEventListener('change', selectProfile);
+  //profileSelector.addEventListener('change', selectProfile);
 
   //----------------------------------------------------------------------------
   // Autoscroll to the bottom of the page when new content is added. If the
@@ -462,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           action: 'SUMMARIZE',
           instructions: instructions.value,
           model: model,
-          profile: profileSelector.value,
+          profile: currentProfile,
           content: text,
         });
       })
