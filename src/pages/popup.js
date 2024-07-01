@@ -369,9 +369,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     for (const button of buttons) {
       if (button.textContent === currentProfile) {
-        button.className = 'btn btn-sm mx-1 text-nowrap btn-outline-primary active';
+        button.className = 'btn btn-sm m-1 text-nowrap btn-outline-primary active';
       } else {
-        button.className = 'btn btn-sm mx-1 text-nowrap btn-outline-secondary';
+        button.className = 'btn btn-sm m-1 text-nowrap btn-outline-secondary';
       }
     }
 

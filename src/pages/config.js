@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const maxPromptBytes = 8192;
+  const customPromptsCounter = document.getElementById('customPromptsCounter');
+
   const status = document.getElementById('status');
 
   const profileSelector = document.getElementById('profileSelector');
@@ -15,6 +18,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let config;
   let currentProfile;
+
+  function updateCustomPromptsCounter() {
+    const encoder = new TextEncoder();
+    let byteCount = encoder.encode(customPrompts.value).length;
+
+    if (byteCount > maxPromptBytes) {
+      let low = 0;
+      let high = customPrompts.value.length;
+      let mid;
+      while (low < high) {
+        mid = Math.floor((low + high) / 2);
+        byteCount = encoder.encode(customPrompts.value.substring(0, mid)).length;
+
+        if (byteCount > maxPromptBytes) {
+          high = mid;
+        } else {
+          low = mid + 1;
+        }
+      }
+
+      customPrompts.value = customPrompts.value.substring(0, high - 1);
+      byteCount = encoder.encode(customPrompts.value).length;
+    }
+
+    customPromptsCounter.textContent = `${byteCount}/${maxPromptBytes}`;
+
+    // Update the color of the byte counter based on the byte count
+    customPromptsCounter.classList.remove('text-danger');
+    customPromptsCounter.classList.remove('text-muted');
+
+    if (byteCount >= maxPromptBytes) {
+      customPromptsCounter.classList.add('text-danger');
+    } else {
+      customPromptsCounter.classList.add('text-muted');
+    }
+  }
 
   function buildDefaultProfile() {
     return {
@@ -198,6 +237,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       customPrompts.value = data.customPrompts.join('\n') || '';
       isDefault.checked = profile === config.defaultProfile;
 
+      // Update the byte counter after setting the prompt value
+      updateCustomPromptsCounter();
+
       return;
     }
 
@@ -314,6 +356,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       fileReader.readAsText(file);
     }
   });
+
+  // Powers the display of the custom prompts byte counter
+  customPrompts.addEventListener('input', updateCustomPromptsCounter);
 
   // Load config on page load
   await reloadConfig();

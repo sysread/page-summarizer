@@ -1,6 +1,7 @@
 # 2.0.0
 - Feature: remember last used profile
 - Feature: fewer clicks to select profile
+- Feature: display character count in profile prompt in settings; prevent saving if too long
 
 # 1.9.9
 - Improvement: better space management for large profile prompts
