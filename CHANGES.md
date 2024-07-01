@@ -1,3 +1,6 @@
+# 2.0.0
+- Feature: remember last used profile
+
 # 1.9.9
 - Improvement: better space management for large profile prompts
 

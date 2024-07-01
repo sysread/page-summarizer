@@ -311,7 +311,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Load profiles and set the current profile in the dropdown
   async function loadProfiles() {
-    const { defaultProfile, profiles } = await chrome.storage.sync.get(['defaultProfile', 'profiles']);
+    const [{ defaultProfile, profiles }, { lastUsedProfile }] = await Promise.all([
+      chrome.storage.sync.get(['defaultProfile', 'profiles']),
+      chrome.storage.local.get(['lastUsedProfile']),
+    ]);
 
     if (!profiles) {
       reportError(noProfilesMessage);
@@ -328,20 +331,23 @@ document.addEventListener('DOMContentLoaded', async function () {
       const option = new Option(profileName, profileName);
       profileSelector.add(option);
 
-      if (profileName === defaultProfile) {
+      if (profileName === lastUsedProfile) {
         const profileKey = `profile__${profileName}`;
         const profileData = await chrome.storage.sync.get(profileKey);
         setModel(profileData[profileKey].model);
       }
     });
 
-    profileSelector.value = defaultProfile;
+    profileSelector.value = lastUsedProfile || defaultProfile;
   }
 
   // Update the model and instructions when the profile changes
-
   async function selectProfile() {
     const selectedProfileName = profileSelector.value;
+
+    // Save the selected profile name locally
+    await chrome.storage.local.set({ lastUsedProfile: selectedProfileName });
+
     const profileKey = `profile__${selectedProfileName}`;
     const profileData = await chrome.storage.sync.get(profileKey);
 
