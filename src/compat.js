@@ -4,6 +4,32 @@ async function updateConfig(keys, callback) {
   return chrome.storage.sync.set(config);
 }
 
+const defaultProfile = {
+  model: 'gpt-3.5-turbo-16k',
+  customPrompts: ['Please summarize the contents of this web page for brevity.'],
+};
+
+export async function setDefaultConfig() {
+  await updateConfig(null, async (config) => {
+    config.profiles ||= [];
+    config.debug ||= false;
+    config.apiKey ||= '';
+
+    if (!config.defaultProfile) {
+      if (config.profiles.length === 0) {
+        config.profiles = ['default'];
+        config.profile__default = defaultProfile;
+        config.defaultProfile = 'default';
+      }
+    } else if (config.profiles.indexOf(config.defaultProfile) === -1) {
+      config.profiles.push(config.defaultProfile);
+      config['profile__' + config.defaultProfile] = defaultProfile;
+    }
+
+    return config;
+  });
+}
+
 async function updateModelName(from, to) {
   await updateConfig(['profiles'], async (config) => {
     if (Array.isArray(config.profiles)) {
@@ -19,7 +45,7 @@ async function updateModelName(from, to) {
       }
     } else {
       // Old structure: profiles is an object
-      for (const profileName of Object.keys(config.profiles)) {
+      for (const profileName of Object.keys(config.profiles || {})) {
         const profile = config.profiles[profileName];
 
         if (profile.model === from) {
@@ -81,12 +107,12 @@ export async function updateProfileStructure_20240620() {
 
     const newConfig = {};
 
-    for (const name of Object.keys(oldConfig.profiles)) {
+    for (const name of Object.keys(oldConfig.profiles || {})) {
       const profile = oldConfig.profiles[name];
       newConfig['profile__' + name] = profile;
     }
 
-    newConfig.profiles = Object.keys(oldConfig.profiles);
+    newConfig.profiles = Object.keys(oldConfig.profiles || {});
 
     return newConfig;
   });

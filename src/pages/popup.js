@@ -352,10 +352,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Automatically select a profile if necessary
     if (lastUsedProfile) {
-      console.log('LAST USED PROFILE', lastUsedProfile);
       await selectProfile(lastUsedProfile);
     } else if (defaultProfile) {
-      console.log('DEFAULT PROFILE', defaultProfile);
       await selectProfile(defaultProfile);
     }
   }
@@ -380,8 +378,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const profileKey = `profile__${selectedProfileName}`;
     const profileData = await chrome.storage.sync.get(profileKey);
-
-    console.log('PROFILE', profileKey);
 
     if (profileData[profileKey]) {
       const selectedProfile = profileData[profileKey];

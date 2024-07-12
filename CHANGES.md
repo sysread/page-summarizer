@@ -1,6 +1,10 @@
+# 2.0.1
+- Feature: fewer clicks to select profile
+- Bugfix: fix unchecked access in profile compatibility check
+- Bugfix: fix bug in initial configuration
+
 # 2.0.0
 - Feature: remember last used profile
-- Feature: fewer clicks to select profile
 - Feature: display character count in profile prompt in settings; prevent saving if too long
 
 # 1.9.9
