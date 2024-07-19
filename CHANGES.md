@@ -1,3 +1,6 @@
+# 2.0.2
+- Adds gpt-4o-mini model
+
 # 2.0.1
 - Feature: fewer clicks to select profile
 - Bugfix: fix unchecked access in profile compatibility check
