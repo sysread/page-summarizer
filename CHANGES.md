@@ -1,3 +1,7 @@
+# 2.0.3
+- Auto-populate model options from OpenAI API
+- Default model is updated to `gpt-4o-mini`
+
 # 2.0.2
 - Adds gpt-4o-mini model
 

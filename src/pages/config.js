@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const defaultModel = 'gpt-4o-mini';
+
   const maxPromptBytes = 8192;
   const customPromptsCounter = document.getElementById('customPromptsCounter');
 
@@ -12,9 +14,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Profile options
   const name = document.getElementById('name');
-  const model = document.getElementById('model');
   const customPrompts = document.getElementById('customPrompts');
   const isDefault = document.getElementById('default');
+
+  // Model-related widgets
+  const refreshModelsBtn = document.getElementById('refresh-models-btn');
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+  const modelSelect = document.getElementById('model');
 
   let config;
   let currentProfile;
@@ -57,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function buildDefaultProfile() {
     return {
-      model: 'gpt-3.5-turbo-16k',
+      model: defaultModel,
       customPrompts: [],
     };
   }
@@ -79,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Profile options
     const name = document.getElementById('name').value.trim();
-    const model = document.getElementById('model').value.trim();
+    const model = modelSelect.value.trim();
     const customPrompts = document.getElementById('customPrompts').value.split('\n');
     const isDefault = document.getElementById('default').checked;
 
@@ -127,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await chrome.storage.sync.set(config);
     await reloadConfig();
-    await selectProfile(name);
+    selectProfile(name);
 
     window.scrollTo(0, 0);
     showSuccess('Settings saved.');
@@ -153,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.storage.sync.set(config);
 
       showSuccess(`Profile "${currentProfile}" deleted.`);
-      await selectProfile(config.defaultProfile);
+      selectProfile(config.defaultProfile);
     }
   }
 
@@ -184,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function reloadConfig() {
     const profileKeys = (await chrome.storage.sync.get('profiles')).profiles.map((name) => `profile__${name}`);
-    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'profiles', ...profileKeys]);
+    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'models', 'profiles', ...profileKeys]);
     console.log('Config', config);
 
     if (config.profiles === undefined) {
@@ -214,7 +220,113 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Populate the profile selector dropdown
     sortedProfileNames.forEach(addOption);
 
-    await selectProfile(currentProfile);
+    // Populate the model selector dropdown if possible
+    if (config.models && config.models.length > 0) {
+      populateModelOptions(config.models);
+      modelSelect.disabled = false;
+      saveProfileBtn.disabled = false;
+    } else {
+      modelSelect.disabled = true;
+      saveProfileBtn.disabled = true;
+    }
+
+    selectProfile(currentProfile);
+  }
+
+  function populateModelOptions(models) {
+    // Clear existing options
+    modelSelect.innerHTML = '';
+
+    // Populate the models dropdown
+    models.forEach((modelName) => {
+      const option = new Option(modelName, modelName);
+      modelSelect.add(option);
+    });
+  }
+
+  async function fetchAvailableModels(apiKey) {
+    const headers = {
+      Authorization: `Bearer ${apiKey}`,
+    };
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: headers,
+      });
+
+      if (!response.ok) {
+        console.error('Error fetching models:', response);
+        throw new Error(`Error fetching models: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      models = data.data
+        // We only want the model IDs
+        .map((model) => model.id)
+        // Filter out models that are not GPT-3 or GPT-4
+        .filter((model) => model.startsWith('gpt-'))
+        // Filter out models matching `-\d\d\d\d`
+        .filter((model) => !model.match(/-\d\d\d\d/));
+
+      models.sort();
+
+      return models;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
+
+  async function refreshAvailableModels() {
+    // Disable the button to prevent multiple clicks
+    refreshModelsBtn.disabled = true;
+    refreshModelsBtn.textContent = 'Refreshing...';
+
+    // Store the currently selected model
+    const currentModel = modelSelect.value;
+
+    try {
+      const apiKeyValue = apiKey.value.trim();
+
+      if (!apiKeyValue) {
+        showError('Please enter your OpenAI API key before refreshing models.');
+        return;
+      }
+
+      const models = await fetchAvailableModels(apiKeyValue);
+
+      if (models.length === 0) {
+        showError('No models retrieved. Please check your API key and try again.');
+        return;
+      }
+
+      // Store models in config
+      config.models = models;
+      await chrome.storage.sync.set(config);
+
+      // Populate the models dropdown
+      populateModelOptions(models);
+
+      // Enable the models select and save button
+      modelSelect.disabled = false;
+      saveProfileBtn.disabled = false;
+
+      showSuccess('Available models have been refreshed.');
+
+      // Restore the previously selected model... if it still exists.
+      if (models.includes(currentModel)) {
+        modelSelect.value = currentModel;
+      } else {
+        modelSelect.value = defaultModel;
+      }
+    } catch (error) {
+      showError(`Failed to refresh models: ${error.message}`);
+    } finally {
+      refreshModelsBtn.disabled = false;
+      refreshModelsBtn.textContent = 'Refresh available models';
+    }
   }
 
   function addOption(name) {
@@ -233,7 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       profileSelector.value = profile;
 
       name.value = profile;
-      model.value = data.model || 'gpt-3.5-turbo-16k';
+      modelSelect.value = data.model || defaultModel;
       customPrompts.value = data.customPrompts.join('\n') || '';
       isDefault.checked = profile === config.defaultProfile;
 
@@ -355,6 +467,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file) {
       fileReader.readAsText(file);
     }
+  });
+
+  // Event listener for the refresh models button
+  refreshModelsBtn.addEventListener('click', async () => {
+    await refreshAvailableModels();
   });
 
   // Powers the display of the custom prompts byte counter

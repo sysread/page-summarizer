@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async function () {
+  const defaultModel = 'gpt-4o-mini';
+
   const query = new URLSearchParams(window.location.search);
 
   const target = document.getElementById('summary');
@@ -298,8 +300,24 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   async function getModel() {
     const selectedModel = modelDropdown ? modelDropdown.value : undefined;
-    return selectedModel || 'gpt-3.5-turbo-16k'; // Fallback to a default model
+    return selectedModel || defaultModel; // Fallback to a default model
   }
+
+  async function populateModelOptions() {
+    const config = await chrome.storage.sync.get('models');
+    const models = config.models || [];
+
+    // Clear existing options
+    modelDropdown.innerHTML = '';
+
+    // Populate the models dropdown
+    models.forEach((modelName) => {
+      const option = new Option(modelName, modelName);
+      modelDropdown.add(option);
+    });
+  }
+
+  await populateModelOptions();
 
   //----------------------------------------------------------------------------
   // powers the profile dropdown
@@ -411,9 +429,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Initial call to load profiles
   await loadProfiles();
 
-  // Update profile when the selector changes
-  //profileSelector.addEventListener('change', selectProfile);
-
   //----------------------------------------------------------------------------
   // Autoscroll to the bottom of the page when new content is added. If the
   // user scrolls up, disable autoscroll until they scroll back to the bottom.
@@ -437,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const url = await getOriginalTabUrl();
     const config = await chrome.storage.local.get('results');
 
-    if (config.results && config.results[url]) {
+    if (config.results && config.results[url] && config.results[url].summary) {
       const result = config.results[url];
 
       // Check if the result is a string (old format) or an object (new format)

@@ -4,8 +4,10 @@ async function updateConfig(keys, callback) {
   return chrome.storage.sync.set(config);
 }
 
+const defaultModel = 'gpt-4o-mini';
+
 const defaultProfile = {
-  model: 'gpt-3.5-turbo-16k',
+  model: defaultModel,
   customPrompts: ['Please summarize the contents of this web page for brevity.'],
 };
 
@@ -64,7 +66,7 @@ export async function updateConfigToUseProfiles_20231117() {
     if (oldConfig.model && !oldConfig.profiles) {
       // Found old configuration, migrate to new profile-based format
       const defaultProfileConfig = {
-        model: oldConfig.model || 'gpt-3.5-turbo-16k',
+        model: oldConfig.model || defaultModel,
         customPrompts: oldConfig.customPrompts || [],
       };
 
