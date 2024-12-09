@@ -224,10 +224,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (config.models && config.models.length > 0) {
       populateModelOptions(config.models);
       modelSelect.disabled = false;
-      saveProfileBtn.disabled = false;
     } else {
       modelSelect.disabled = true;
-      saveProfileBtn.disabled = true;
     }
 
     selectProfile(currentProfile);
