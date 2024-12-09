@@ -1,3 +1,6 @@
+# 2.0.4
+- Fix a bug preventing new users from saving their API key
+
 # 2.0.3
 - Auto-populate model options from OpenAI API
 - Default model is updated to `gpt-4o-mini`
