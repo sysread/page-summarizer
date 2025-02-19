@@ -14,9 +14,11 @@ export async function fetchAndStreamSummary(port, content, instructions, model, 
     instructions = profileData[profileKey].customPrompts.join('\n');
   }
 
+  const systemRole = model.match(/^o\d($|-)/) ? 'system' : 'developer';
+
   let messages = [
     {
-      role: 'system',
+      role: systemRole,
       content: 'You are a browser extension that helps the user understand the contents of a web page.',
     },
     {

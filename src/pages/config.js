@@ -263,10 +263,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       models = data.data
         // We only want the model IDs
         .map((model) => model.id)
-        // Filter out models that are not GPT-3 or GPT-4
-        .filter((model) => model.startsWith('gpt-'))
+        .filter((model) => {
+          return model.match(/^(gpt-4o|o1|o3)/);
+        })
         // Filter out models matching `-\d\d\d\d`
-        .filter((model) => !model.match(/-\d\d\d\d/));
+        .filter((model) => !model.match(/-\d\d\d\d/))
+        // Filter out models that are not text-based
+        .filter((model) => model.indexOf('audio') < 0);
 
       models.sort();
 
