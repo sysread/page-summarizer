@@ -165,6 +165,7 @@ export async function fetchAndStream(port, messages, options = {}) {
   try {
     const payload = {
       model: options.model || profile.model,
+      reasoning_effort: profile.reasoning,
       messages: messages,
       stream: true,
     };

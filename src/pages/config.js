@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const defaultModel = 'gpt-4o-mini';
+  const defaultReasoning = 'medium';
 
   const maxPromptBytes = 8192;
   const customPromptsCounter = document.getElementById('customPromptsCounter');
@@ -21,9 +22,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   const refreshModelsBtn = document.getElementById('refresh-models-btn');
   const saveProfileBtn = document.getElementById('save-profile-btn');
   const modelSelect = document.getElementById('model');
+  const reasoningSelect = document.getElementById('reasoning');
 
   let config;
   let currentProfile;
+
+  function isReasoningModel(model) {
+    return model.startsWith('o1') || model.startsWith('o3');
+  }
+
+  function toggleReasoningOptions() {
+    const model = modelSelect.value;
+
+    if (!isReasoningModel(model)) {
+      reasoningSelect.value = '';
+      reasoningSelect.disabled = true;
+    } else {
+      reasoningSelect.value = defaultReasoning;
+      reasoningSelect.disabled = false;
+    }
+  }
 
   function updateCustomPromptsCounter() {
     const encoder = new TextEncoder();
@@ -85,9 +103,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Profile options
     const name = document.getElementById('name').value.trim();
-    const model = modelSelect.value.trim();
     const customPrompts = document.getElementById('customPrompts').value.split('\n');
     const isDefault = document.getElementById('default').checked;
+    const model = modelSelect.value.trim();
+    const reasoning = isReasoningModel(model) ? reasoningSelect.value.trim() : null;
 
     // Basic validations
     if (apiKey == '') {
@@ -102,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const newProfile = {
       model: model,
+      reasoning: reasoning,
       customPrompts: customPrompts,
     };
 
@@ -347,8 +367,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       name.value = profile;
       modelSelect.value = data.model || defaultModel;
+      reasoningSelect.value = data.reasoning || '';
       customPrompts.value = data.customPrompts.join('\n') || '';
       isDefault.checked = profile === config.defaultProfile;
+
+      // Update the model select and reasoning select based on the current model
+      toggleReasoningOptions();
 
       // Update the byte counter after setting the prompt value
       updateCustomPromptsCounter();
@@ -474,6 +498,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   refreshModelsBtn.addEventListener('click', async () => {
     await refreshAvailableModels();
   });
+
+  // Event listener to disable/enable the reasoning effort drop down based on
+  // the selected model.
+  modelSelect.addEventListener('change', () => toggleReasoningOptions());
 
   // Powers the display of the custom prompts byte counter
   customPrompts.addEventListener('input', updateCustomPromptsCounter);

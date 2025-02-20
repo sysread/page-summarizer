@@ -61,9 +61,18 @@
           </div>
 
           <div class="mb-3">
-            <label for="model" class="form-label">Default model</label>
+            <label for="model" class="form-label">Model</label>
             <div class="input-group">
               <select id="model" name="model" class="form-select"></select>
+
+              <span class="input-group-text" id="basic-addon3">Reasoning</span>
+              <select id="reasoning" name="reasoning" class="form-select">
+                <option value="">N/A</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+
               <button id="refresh-models-btn" class="btn btn-secondary">Refresh available models</button>
             </div>
           </div>

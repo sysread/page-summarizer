@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', async function () {
   const defaultModel = 'gpt-4o-mini';
+  const defaultReasoning = 'medium';
 
   const query = new URLSearchParams(window.location.search);
 
   const target = document.getElementById('summary');
   const modelDropdown = document.getElementById('model');
+  const reasoningDropdown = document.getElementById('reasoning');
   const instructions = document.getElementById('instructions');
   const profileContainer = document.getElementById('profileContainer');
 
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         break;
 
       case 'GPT_DONE':
-        const model = await getModel();
+        const model = getModel();
         setSummary(lastMessage, model);
         working = false;
         break;
@@ -286,6 +288,30 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   //----------------------------------------------------------------------------
+  // powers the reasoning dropdown
+  //----------------------------------------------------------------------------
+  function isReasoningModel(model) {
+    return model.startsWith('o1') || model.startsWith('o3');
+  }
+
+  function setReasoningEffort(model, reasoning = null) {
+    console.log('model', model);
+    console.log('reasoning', reasoning);
+
+    if (!isReasoningModel(model)) {
+      reasoningDropdown.value = '';
+      reasoningDropdown.disabled = true;
+    } else {
+      reasoningDropdown.value = reasoning || defaultReasoning;
+      reasoningDropdown.disabled = false;
+    }
+  }
+
+  function getReasoningEffort() {
+    return reasoningDropdown ? reasoningDropdown.value : defaultReasoning;
+  }
+
+  //----------------------------------------------------------------------------
   // powers the model dropdown
   //----------------------------------------------------------------------------
   async function setModel(model = null) {
@@ -293,12 +319,14 @@ document.addEventListener('DOMContentLoaded', async function () {
       const profileKey = `profile__${currentProfile}`;
       const profileData = await chrome.storage.sync.get(profileKey);
       modelDropdown.value = profileData[profileKey].model;
+      setReasoningEffort(profileData[profileKey].model, profileData[profileKey].reasoning);
     } else {
       modelDropdown.value = model;
+      setReasoningEffort(model, null);
     }
   }
 
-  async function getModel() {
+  function getModel() {
     const selectedModel = modelDropdown ? modelDropdown.value : undefined;
     return selectedModel || defaultModel; // Fallback to a default model
   }
@@ -415,12 +443,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     } else if (selectedProfileName === '') {
       reportError(noProfilesMessage);
-      setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
+      setModel(defaultModel); // Fallback to a default model
       instructions.value = defaultInstruction; // Fallback instructions
       instructions.classList.add('hint');
     } else {
       reportError(`Profile "${selectedProfileName}" not found.`);
-      setModel('gpt-3.5-turbo-16k'); // Fallback to a default model
+      setModel(defaultModel); // Fallback to a default model
       instructions.value = defaultInstruction; // Fallback instructions
       instructions.classList.add('hint');
     }
@@ -497,7 +525,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   async function requestNewSummary() {
-    const model = await getModel();
+    const model = getModel();
     const content = await getReferenceText()
       .then((text) => {
         postMessage({
@@ -529,6 +557,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         window.scrollTo(0, 0);
       });
     }
+  });
+
+  modelDropdown.addEventListener('change', async () => {
+    const model = getModel();
+    setReasoningEffort(model);
   });
 
   // Flag to prevent multiple clicks
