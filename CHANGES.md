@@ -1,3 +1,6 @@
+# 2.0.5
+- Add support for reasoning models `o1` and `o3` (and variants)
+
 # 2.0.4
 - Fix a bug preventing new users from saving their API key
 
