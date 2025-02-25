@@ -295,9 +295,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   function setReasoningEffort(model, reasoning = null) {
-    console.log('model', model);
-    console.log('reasoning', reasoning);
-
     if (!isReasoningModel(model)) {
       reasoningDropdown.value = '';
       reasoningDropdown.disabled = true;

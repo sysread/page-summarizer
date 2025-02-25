@@ -139,6 +139,10 @@ function gptDone(port, summary) {
   port.postMessage({ action: 'GPT_DONE', summary: summary });
 }
 
+function isReasoningModel(model) {
+  return model.startsWith('o1') || model.startsWith('o3');
+}
+
 //------------------------------------------------------------------------------
 // Takes the list of message prompts and sends them to OpeanAI's chat
 // completions endpoint. It then streams the responses back to the
@@ -165,10 +169,13 @@ export async function fetchAndStream(port, messages, options = {}) {
   try {
     const payload = {
       model: options.model || profile.model,
-      reasoning_effort: profile.reasoning,
       messages: messages,
       stream: true,
     };
+
+    if (isReasoningModel(payload.model)) {
+      payload.reasoning_effort = profile.reasoning;
+    }
 
     debug('PAYLOAD', payload);
 
