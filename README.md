@@ -21,10 +21,12 @@ summarize, click the extension icon, and get a concise summary.
 
 ### Prerequisites
 
-You'll need to have Google Chrome or a Chromium-based browser installed and an
-API key from OpenAI. This _might_ work on Firefox, but I took exactly zero
-minutes ensuring my API calls were cross platform. It does work on Opera,
-though.
+You'll need to have Google Chrome or a Chromium-based browser installed. This
+_might_ work on Firefox, but I took exactly zero minutes ensuring my API calls
+were cross platform. It does work on Opera, though.
+
+- Sign up for an [OpenAI API account](https://platform.openai.com/signup)
+- Create an [API key](https://platform.openai.com/api-keys)
 
 ### Installation from the Chrome Web Store
 

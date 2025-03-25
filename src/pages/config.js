@@ -110,7 +110,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Basic validations
     if (apiKey == '') {
-      showError('An API key is required. Get one <a href="https://beta.openai.com">here</a>.');
+      showError(`
+        <p>An API key is required.</p>
+        <ol>
+          <li>Sign up for an OpenAI API account <a href="https://platform.openai.com/signup/">here</a>.
+          <li>Get your API key from the <a href="https://platform.openai.com/api-keys">API keys</a> page.
+          <li>Enter your API key in the field above.</li>
+        </ol>
+      `);
       return;
     }
 
@@ -283,13 +290,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       models = data.data
         // We only want the model IDs
         .map((model) => model.id)
-        .filter((model) => {
-          return model.match(/^(gpt-4o|o1|o3)/);
-        })
+        .filter((model) => model.match(/^(gpt-4o|o1|o3)/))
         // Filter out models matching `-\d\d\d\d`
         .filter((model) => !model.match(/-\d\d\d\d/))
         // Filter out models that are not text-based
-        .filter((model) => model.indexOf('audio') < 0);
+        .filter((model) => model.indexOf('audio') < 0)
+        // Filter out models that are not text-based
+        .filter((model) => model.indexOf('tts') < 0)
+        // Filter out models that are not text-based
+        .filter((model) => model.indexOf('transcribe') < 0)
+        // Filter out real-time chat models
+        .filter((model) => model.indexOf('realtime') < 0);
 
       models.sort();
 
