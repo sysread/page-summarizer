@@ -1,3 +1,13 @@
+# 2.0.8
+- Add support for newer reasoning models
+- Fix bugs related to selection of reasoning effort in popup and config
+
+# 2.0.7
+- Wow, I am really bad at this, apparently
+
+# 2.0.6
+- Oops, I forgot to write a changelog for this version
+
 # 2.0.5
 - Add support for reasoning models `o1` and `o3` (and variants)
 

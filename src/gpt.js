@@ -139,10 +139,6 @@ function gptDone(port, summary) {
   port.postMessage({ action: 'GPT_DONE', summary: summary });
 }
 
-function isReasoningModel(model) {
-  return model.startsWith('o1') || model.startsWith('o3');
-}
-
 //------------------------------------------------------------------------------
 // Takes the list of message prompts and sends them to OpeanAI's chat
 // completions endpoint. It then streams the responses back to the
@@ -218,4 +214,20 @@ export async function fetchAndStream(port, messages, options = {}) {
   } catch (error) {
     console.error(error);
   }
+}
+
+//------------------------------------------------------------------------------
+// Filters the list of OpenAI models to only those that are useful for our
+// purposes.
+//------------------------------------------------------------------------------
+export function wantModel(model) {
+  return [/^o\d-mini$/, /^gpt-\d(\.\d)?o(-mini)?$/].some((re) => re.test(model));
+}
+
+//------------------------------------------------------------------------------
+// Returns true if the model is a reasoning model. This is used to determine
+// if we need to send the reasoning effort parameter in the request.
+// ------------------------------------------------------------------------------
+export function isReasoningModel(model) {
+  return /o\d-mini/.test(model);
 }

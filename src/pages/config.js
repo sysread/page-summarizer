@@ -1,3 +1,5 @@
+import { wantModel, isReasoningModel } from '../gpt.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   const defaultModel = 'gpt-4o-mini';
   const defaultReasoning = 'medium';
@@ -27,10 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let config;
   let currentProfile;
 
-  function isReasoningModel(model) {
-    return model.startsWith('o1') || model.startsWith('o3');
-  }
-
   function toggleReasoningOptions() {
     const model = modelSelect.value;
 
@@ -38,8 +36,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       reasoningSelect.value = '';
       reasoningSelect.disabled = true;
     } else {
-      reasoningSelect.value = defaultReasoning;
       reasoningSelect.disabled = false;
+      if (currentProfile && config.profiles.includes(currentProfile)) {
+        const data = config[`profile__${currentProfile}`];
+        reasoningSelect.value = data.reasoning || defaultReasoning;
+      } else {
+        reasoningSelect.value = defaultReasoning;
+      }
     }
   }
 
@@ -286,22 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const data = await response.json();
-
-      models = data.data
-        // We only want the model IDs
-        .map((model) => model.id)
-        .filter((model) => model.match(/^(gpt-4o|o1|o3)/))
-        // Filter out models matching `-\d\d\d\d`
-        .filter((model) => !model.match(/-\d\d\d\d/))
-        // Filter out models that are not text-based
-        .filter((model) => model.indexOf('audio') < 0)
-        // Filter out models that are not text-based
-        .filter((model) => model.indexOf('tts') < 0)
-        // Filter out models that are not text-based
-        .filter((model) => model.indexOf('transcribe') < 0)
-        // Filter out real-time chat models
-        .filter((model) => model.indexOf('realtime') < 0);
-
+      const models = data.data.map((model) => model.id).filter(wantModel);
       models.sort();
 
       return models;

@@ -1,3 +1,5 @@
+import { isReasoningModel } from '../gpt.js';
+
 document.addEventListener('DOMContentLoaded', async function () {
   const defaultModel = 'gpt-4o-mini';
   const defaultReasoning = 'medium';
@@ -290,17 +292,21 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   // powers the reasoning dropdown
   //----------------------------------------------------------------------------
-  function isReasoningModel(model) {
-    return model.startsWith('o1') || model.startsWith('o3');
-  }
-
-  function setReasoningEffort(model, reasoning = null) {
+  async function setReasoningEffort(model, reasoning = null) {
     if (!isReasoningModel(model)) {
       reasoningDropdown.value = '';
       reasoningDropdown.disabled = true;
     } else {
-      reasoningDropdown.value = reasoning || defaultReasoning;
       reasoningDropdown.disabled = false;
+
+      if (currentProfile) {
+        const key = `profile__${currentProfile}`;
+        const data = await chrome.storage.sync.get(key);
+        const profile = data[key];
+        reasoningDropdown.value = profile.reasoning || defaultReasoning;
+      } else {
+        reasoningDropdown.value = defaultReasoning;
+      }
     }
   }
 
