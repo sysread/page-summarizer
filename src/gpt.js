@@ -219,9 +219,52 @@ export async function fetchAndStream(port, messages, options = {}) {
 //------------------------------------------------------------------------------
 // Filters the list of OpenAI models to only those that are useful for our
 // purposes.
+//
+// Notes:
+// - We use the Chat Completions endpoint (/v1/chat/completions), not Responses.
+// - /v1/models returns many model IDs (embeddings, audio, moderation, etc.). We
+//   only want models intended for text generation.
 //------------------------------------------------------------------------------
 export function wantModel(model) {
-  return [/^o\d-mini$/, /^gpt-\d(\.\d)?o(-mini)?$/].some((re) => re.test(model));
+  // Prefers undated aliases, but date preference is enforced in model list construction.
+  // (OpenAI tends to provide `foo-YYYY-MM-DD` *and* a dateless `foo` alias.)
+
+  // Allow chat/text model families.
+  const allow = [/^gpt-/i, /^o\d/i].some((re) => re.test(model));
+
+  // Exclude models that are not intended for this extension’s text summaries.
+  const denyRules = [
+    // Explicit non-text model families.
+    /^text-embedding-/i,
+    /^embedding-/i,
+    /^whisper-/i,
+    /\btts-/i,
+    /-tts\b/i,
+    /^omni-moderation-/i,
+    /^text-moderation-/i,
+    /^moderation-/i,
+    /^dall-e-/i,
+
+    // Known "not what we want" tokens/families.
+    /(^|-)instruct($|-)/i,
+    /(^|-)preview($|-)/i,
+    // Exclude turbo variants (e.g. gpt-4-turbo) but keep gpt-3.5-turbo.
+    // (We do this with a regex rather than an explicit model list.)
+    /(^|-)pro($|-)/i,
+    /(^|-)image($|-)/i,
+    /(^|-)realtime($|-)/i,
+    /(^|-)audio($|-)/i,
+    /(^|-)transcribe($|-)/i,
+    /(^|-)diarize($|-)/i,
+    /(^|-)search($|-)/i,
+    /(^|-)codex($|-)/i,
+    /(^|-)deep-research($|-)/i,
+  ];
+  const isTurboVariant = /(^|-)turbo($|-)/i.test(model);
+  const isAllowedTurbo = /^gpt-3\.5-turbo($|-)/i.test(model);
+  const deny = denyRules.some((re) => re.test(model)) || (isTurboVariant && !isAllowedTurbo);
+
+  return allow && !deny;
 }
 
 //------------------------------------------------------------------------------

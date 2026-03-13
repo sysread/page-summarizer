@@ -284,18 +284,38 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       if (!response.ok) {
+        const errorMsg = response.statusText;
         console.error('Error fetching models:', response);
-        throw new Error(`Error fetching models: ${response.statusText}`);
+        return { models: [], error: `Error fetching models: ${errorMsg}` };
       }
 
       const data = await response.json();
-      const models = data.data.map((model) => model.id).filter(wantModel);
-      models.sort();
-
-      return models;
+      const candidateIds = data.data.map((model) => model.id);
+      const filtered = candidateIds.filter(wantModel);
+      const withoutNumericSuffix = filtered.filter(id => !/-\d{4,}$/.test(id));
+      const DATE_SUFFIX_RE = /-\d{4}-\d{2}-\d{2}$/;
+      // Build per-base-model selection map
+      const modelMap = {};
+      for (const id of withoutNumericSuffix) {
+        const base = id.replace(DATE_SUFFIX_RE, '');
+        if (!modelMap[base]) {
+          modelMap[base] = { undated: null, dated: null };
+        }
+        if (DATE_SUFFIX_RE.test(id)) {
+          // Keep first dated if multiple exist
+          if (modelMap[base].dated === null) {
+            modelMap[base].dated = id;
+          }
+        } else {
+          modelMap[base].undated = id;
+        }
+      }
+      const chosen = Object.values(modelMap).map(({undated, dated}) => undated || dated);
+      chosen.sort();
+      return { models: chosen, error: null };
     } catch (error) {
       console.error(error);
-      return [];
+      return { models: [], error: error.message };
     }
   }
 
@@ -315,10 +335,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const models = await fetchAvailableModels(apiKeyValue);
+      const result = await fetchAvailableModels(apiKeyValue);
+
+      if (result.error) {
+        showError(`Failed to refresh models: ${result.error}`);
+        return;
+      }
+
+      const models = result.models;
 
       if (models.length === 0) {
-        showError('No models retrieved. Please check your API key and try again.');
+        showError(
+          'No usable chat models were returned. This can happen if OpenAI returned only models that this extension filters out (preview/turbo/pro/dated/audio/etc).'
+        );
         return;
       }
 
@@ -341,6 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         modelSelect.value = defaultModel;
       }
+      toggleReasoningOptions();
     } catch (error) {
       showError(`Failed to refresh models: ${error.message}`);
     } finally {
