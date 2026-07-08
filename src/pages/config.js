@@ -1,4 +1,5 @@
 import { wantModel, isReasoningModel } from '../gpt.js';
+import { addProfile, deleteProfile, buildDefaultProfile } from '../profiles.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const defaultModel = 'gpt-4o-mini';
@@ -80,13 +81,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       customPromptsCounter.classList.add('text-muted');
     }
-  }
-
-  function buildDefaultProfile() {
-    return {
-      model: defaultModel,
-      customPrompts: [],
-    };
   }
 
   function buildDefaultConfig() {
@@ -176,16 +170,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (confirm(`Are you sure you want to delete "${currentProfile}"? This cannot be undone.`)) {
-      // remove from list of profile names
-      config.profiles = config.profiles.filter((profile) => profile !== currentProfile);
+      const result = deleteProfile(config, currentProfile);
+      if (result.error) {
+        showError(result.error);
+        return;
+      }
 
-      // remove individual profile's config
-      delete config[`profile__${currentProfile}`];
-
-      // remove from the ui
       profileSelector.remove(profileSelector.selectedIndex);
 
-      // save the new config
       await chrome.storage.sync.set(config);
 
       showSuccess(`Profile "${currentProfile}" deleted.`);
@@ -196,23 +188,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function addNewProfile() {
     const name = prompt('Enter a name for the new profile');
 
-    if (config.profiles.includes(name)) {
-      showError(`Profile "${name}" already exists.`);
+    if (!name) return;
+
+    const result = addProfile(config, name);
+    if (result.error) {
+      showError(result.error);
       return;
     }
 
-    // Not an error - the user probably cancelled
-    if (name == '' || name == null) {
-      return;
-    }
-
-    config.profiles.push(name);
-    config[`profile__${name}`] = buildDefaultProfile();
     await chrome.storage.sync.set(config);
 
     addOption(name);
 
-    // omg this is stupid, why do i have to do this?
     profileSelector.value = name;
     const event = new Event('change', { bubbles: true });
     profileSelector.dispatchEvent(event);
