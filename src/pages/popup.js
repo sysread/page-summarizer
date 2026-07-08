@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   // Extracting text from PDF files
   //----------------------------------------------------------------------------
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '../assets/pdf.worker.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '../assets/pdf.worker.min.mjs';
 
   async function extractTextFromPDF(url) {
     const pdf = await pdfjsLib.getDocument(url).promise;
