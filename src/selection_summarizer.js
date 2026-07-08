@@ -19,7 +19,10 @@ export async function connectSelectionSummarizer() {
       }
 
       if (tab.url.endsWith('.pdf')) {
-        alert('Cannot summarize selected text from a PDF. Please use the extension popup instead.');
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: () => alert('Cannot summarize selected text from a PDF. Please use the extension popup instead.'),
+        });
         return;
       }
 
