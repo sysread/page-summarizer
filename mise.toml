@@ -1,0 +1,21 @@
+[tools]
+node = "22"
+
+[tasks.deps]
+description = "Install npm dependencies and Playwright chromium browser"
+run = """
+npm install
+npx playwright install chromium
+"""
+
+[tasks.test]
+description = "Run the full test suite (Layers 0-5)"
+run = "node --test test/*.test.js"
+
+[tasks."test:unit"]
+description = "Run only unit tests (Layers 0-4, no browser needed)"
+run = "node --test test/gpt.test.js test/compat.test.js test/profiles.test.js test/connectors.test.js"
+
+[tasks."test:e2e"]
+description = "Run only E2E browser tests (requires deps task first)"
+run = "node --test test/e2e.test.js"
