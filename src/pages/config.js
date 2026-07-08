@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function addNewProfile() {
     const name = prompt('Enter a name for the new profile');
 
-    if (name in config.profiles) {
+    if (config.profiles.includes(name)) {
       showError(`Profile "${name}" already exists.`);
       return;
     }
