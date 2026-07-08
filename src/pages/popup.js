@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Extracting text from anything supported
   //----------------------------------------------------------------------------
   async function getReferenceText() {
-    const url = (await chrome.tabs.get(tabId)).url;
+    const url = (await chrome.tabs.get(tabId)).url || '';
 
     if (isPDF(url)) {
       return extractTextFromPDF(url);
