@@ -1,5 +1,7 @@
 # Page Summarizer
 
+![Tests](https://github.com/sysread/page-summarizer/actions/workflows/test.yml/badge.svg)
+
 Page Summarizer is a Chrome extension that utilizes OpenAI's chat completions
 API to summarize text from a web page. Just highlight the text you want to
 summarize, click the extension icon, and get a concise summary.
