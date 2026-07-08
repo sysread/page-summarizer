@@ -45,7 +45,7 @@ jobs:
     - name: Build Chrome Extension
       if: env.VERSION_CHANGED == 'true'
       run: |
-        zip -r chrome-extension-${VERSION}.zip . -x "*.git*" "docs*"
+        zip -r chrome-extension-${VERSION}.zip . -x "*.git*" "docs*" "test*" "mise.toml" "package.json" "package-lock.json" ".github*" "node_modules*"
 
     - name: Generate and Push Tag
       if: env.VERSION_CHANGED == 'true'
