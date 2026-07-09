@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Global options
   const apiKey = document.getElementById('apiKey');
+  const apiKeyHint = document.getElementById('apiKeyHint');
+  const toggleApiKeyBtn = document.getElementById('toggle-api-key');
   const debug = document.getElementById('debug');
 
   // Profile options
@@ -26,12 +28,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Model-related widgets
   const refreshModelsBtn = document.getElementById('refresh-models-btn');
+  const modelCountPill = document.getElementById('modelCountPill');
+  const modelRefreshPill = document.getElementById('modelRefreshPill');
   const saveProfileBtn = document.getElementById('save-profile-btn');
   const modelSelect = document.getElementById('model');
   const reasoningSelect = document.getElementById('reasoning');
 
   let config;
   let currentProfile;
+
+  // Partially mask an API key for display: show the prefix and last few
+  // chars, replace the middle with dots. Short keys are fully masked.
+  function maskApiKey(key) {
+    if (!key) return '';
+    if (key.length <= 12) return '****';
+    return key.slice(0, 8) + '...' + key.slice(-4);
+  }
+
+  function updateApiKeyHint() {
+    const val = apiKey.value.trim();
+    if (val) {
+      apiKeyHint.textContent = 'Current key: ' + maskApiKey(val);
+      apiKeyHint.classList.remove('d-none');
+    } else {
+      apiKeyHint.classList.add('d-none');
+    }
+  }
+
+  toggleApiKeyBtn.addEventListener('click', () => {
+    if (apiKey.type === 'password') {
+      apiKey.type = 'text';
+      toggleApiKeyBtn.textContent = '\u{1F648}';
+    } else {
+      apiKey.type = 'password';
+      toggleApiKeyBtn.textContent = '\u{1F441}';
+    }
+  });
+
+  apiKey.addEventListener('input', updateApiKeyHint);
 
   function toggleReasoningOptions() {
     const model = modelSelect.value;
@@ -210,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function reloadConfig() {
     const profileKeys = (await chrome.storage.sync.get('profiles')).profiles.map((name) => `profile__${name}`);
-    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'models', 'profiles', ...profileKeys]);
+    config = await chrome.storage.sync.get(['apiKey', 'defaultProfile', 'debug', 'models', 'modelsRefreshedAt', 'profiles', ...profileKeys]);
     console.log('Config', config);
 
     if (config.profiles === undefined) {
@@ -225,6 +259,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Then update the form with global configs
     debug.checked = !!(config.debug || false);
     apiKey.value = config.apiKey;
+    apiKey.type = 'password';
+    toggleApiKeyBtn.textContent = '\u{1F441}';
+    updateApiKeyHint();
 
     // Load profiles into the dropdown and select the current profile.
     // Sort the profiles such that the default profile is always first.
@@ -244,8 +281,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (config.models && config.models.length > 0) {
       populateModelOptions(config.models);
       modelSelect.disabled = false;
+      showModelsAvailable(config.models.length, config.modelsRefreshedAt);
     } else {
       modelSelect.disabled = true;
+      showNoModels();
     }
 
     selectProfile(currentProfile);
@@ -309,10 +348,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function formatRefreshTimestamp(ts) {
+    const d = new Date(ts);
+    const date = d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return `${date} ${time} (${tz})`;
+  }
+
+  function showModelsAvailable(count, refreshedAt) {
+    modelCountPill.textContent = `${count} model${count === 1 ? '' : 's'}`;
+    modelCountPill.classList.remove('d-none', 'text-bg-warning', 'text-bg-danger');
+    modelCountPill.classList.add('text-bg-secondary');
+
+    if (refreshedAt) {
+      modelRefreshPill.textContent = formatRefreshTimestamp(refreshedAt);
+      modelRefreshPill.classList.remove('d-none', 'text-bg-warning', 'text-bg-danger');
+      modelRefreshPill.classList.add('text-bg-light');
+    } else {
+      modelRefreshPill.classList.add('d-none');
+    }
+  }
+
+  function showRefreshStatus(msg, type) {
+    modelCountPill.textContent = msg;
+    modelCountPill.classList.remove('d-none', 'text-bg-secondary', 'text-bg-light', 'text-bg-danger');
+    modelCountPill.classList.add(type === 'danger' ? 'text-bg-danger' : 'text-bg-warning');
+    modelRefreshPill.classList.add('d-none');
+  }
+
+  function showNoModels() {
+    modelCountPill.textContent = 'No models loaded';
+    modelCountPill.classList.remove('d-none', 'text-bg-secondary', 'text-bg-light', 'text-bg-warning');
+    modelCountPill.classList.add('text-bg-danger');
+    modelRefreshPill.classList.add('d-none');
+  }
+
   async function refreshAvailableModels() {
     // Disable the button to prevent multiple clicks
     refreshModelsBtn.disabled = true;
     refreshModelsBtn.textContent = 'Refreshing...';
+    showRefreshStatus('Refreshing models...', 'muted');
 
     // Store the currently selected model
     const currentModel = modelSelect.value;
@@ -321,28 +397,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       const apiKeyValue = apiKey.value.trim();
 
       if (!apiKeyValue) {
-        showError('Please enter your OpenAI API key before refreshing models.');
+        showRefreshStatus('Enter your OpenAI API key first.', 'danger');
         return;
       }
 
       const result = await fetchAvailableModels(apiKeyValue);
 
       if (result.error) {
-        showError(`Failed to refresh models: ${result.error}`);
+        showRefreshStatus(`Failed: ${result.error}`, 'danger');
         return;
       }
 
       const models = result.models;
 
       if (models.length === 0) {
-        showError(
-          'No usable chat models were returned. This can happen if OpenAI returned only models that this extension filters out (preview/turbo/pro/dated/audio/etc).'
-        );
+        showRefreshStatus('No usable models returned', 'danger');
         return;
       }
 
       // Store models in config
       config.models = models;
+      config.modelsRefreshedAt = Date.now();
       await chrome.storage.sync.set(config);
 
       // Populate the models dropdown
@@ -352,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       modelSelect.disabled = false;
       saveProfileBtn.disabled = false;
 
-      showSuccess('Available models have been refreshed.');
+      showModelsAvailable(models.length, config.modelsRefreshedAt);
 
       // Restore the previously selected model... if it still exists.
       if (models.includes(currentModel)) {
@@ -362,10 +437,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       toggleReasoningOptions();
     } catch (error) {
-      showError(`Failed to refresh models: ${error.message}`);
+      showRefreshStatus(`Failed: ${error.message}`, 'danger');
     } finally {
       refreshModelsBtn.disabled = false;
-      refreshModelsBtn.textContent = 'Refresh available models';
+      refreshModelsBtn.textContent = 'Refresh models';
     }
   }
 
