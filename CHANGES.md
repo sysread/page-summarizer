@@ -1,3 +1,22 @@
+# 2.1.0
+- Modernize UI across all surfaces: popup, config, selection overlay, form filler overlay
+- Add dark mode (follows system preference, with manual override in settings)
+- Reorganize settings page into sections: API Key, Preferences, Profiles, Backup & Restore
+- Mask API key in settings with show/hide toggle; display masked key identity
+- Move refresh models button to API Key section with pill badges for model count and last refresh time
+- Replace profile dropdown with draggable pill buttons; drag-and-drop reordering persisted in both settings and popup
+- Relabel "Custom prompts (one per line)" to "Instructions"
+- Fix alert visibility (Bootstrap fade class needed show for innerHTML-injected alerts)
+
+# 2.0.9
+- Add automated test suite (node:test, Layers 0-4 unit tests + Layer 5 E2E with Playwright)
+- Extract profile CRUD from config.js into testable src/profiles.js module
+- Add CI workflow for unit tests on push/PR to main
+- Add mise.toml for Node pinning and task runner
+- Fix PDF worker path to match the minified asset
+- Fix alert() call in MV3 service worker for PDF selection
+- Fix addNewProfile using Array `in` instead of Array.includes
+
 # 2.0.8
 - Add support for newer reasoning models
 - Fix bugs related to selection of reasoning effort in popup and config
