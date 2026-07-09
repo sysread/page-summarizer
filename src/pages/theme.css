@@ -1,0 +1,305 @@
+/* Page Summarizer theme layer on top of Bootstrap 5.3.
+ *
+ * Design tokens (CSS custom properties) for surface colors, borders,
+ * shadows, and spacing. Dark mode is driven by [data-bs-theme="dark"]
+ * on <html>, which the inline head script sets from prefers-color-scheme
+ * and theme.js reconciles with the user's stored override.
+ */
+
+:root {
+  --ps-bg: #f6f7f9;
+  --ps-surface: #ffffff;
+  --ps-surface-hover: #f0f1f4;
+  --ps-border: #e2e5ea;
+  --ps-border-subtle: #eef0f4;
+
+  --ps-text: #1c2330;
+  --ps-text-muted: #6b7280;
+
+  --ps-primary: #4263eb;
+  --ps-primary-hover: #3b5bdb;
+  --ps-primary-soft: rgba(66, 99, 235, 0.10);
+  --ps-primary-border: rgba(66, 99, 235, 0.30);
+
+  --ps-radius: 0.5rem;
+  --ps-radius-sm: 0.375rem;
+  --ps-radius-pill: 50rem;
+
+  --ps-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ps-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ps-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --ps-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --ps-transition: 150ms ease;
+  --ps-transition-fast: 100ms ease;
+
+  --ps-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ps-font-mono: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", "Courier New", monospace;
+}
+
+[data-bs-theme="dark"] {
+  --ps-bg: #16171d;
+  --ps-surface: #1e2028;
+  --ps-surface-hover: #262935;
+  --ps-border: #333742;
+  --ps-border-subtle: #2a2d36;
+
+  --ps-text: #dfe2e8;
+  --ps-text-muted: #9ca3af;
+
+  --ps-primary: #5c7cfa;
+  --ps-primary-hover: #748ffc;
+  --ps-primary-soft: rgba(92, 124, 250, 0.15);
+  --ps-primary-border: rgba(92, 124, 250, 0.35);
+
+  --ps-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ps-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ps-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --ps-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Base */
+
+body {
+  font-family: var(--ps-font);
+  background-color: var(--ps-bg);
+  color: var(--ps-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cards: subtle elevation instead of flat Bootstrap defaults */
+
+.card {
+  background-color: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  border-radius: var(--ps-radius);
+  box-shadow: var(--ps-shadow-sm);
+}
+
+.card-header {
+  background-color: var(--ps-surface);
+  border-bottom: 1px solid var(--ps-border);
+  font-weight: 600;
+}
+
+/* Form controls: refined focus ring and corners */
+
+.form-control,
+.form-select {
+  border-color: var(--ps-border);
+  border-radius: var(--ps-radius-sm);
+  background-color: var(--ps-surface);
+  color: var(--ps-text);
+  transition: border-color var(--ps-transition), box-shadow var(--ps-transition);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ps-primary);
+  box-shadow: 0 0 0 0.2rem var(--ps-primary-soft);
+}
+
+.form-control::placeholder {
+  color: var(--ps-text-muted);
+}
+
+/* Input group text: match surface tone */
+
+.input-group-text {
+  background-color: var(--ps-surface-hover);
+  border-color: var(--ps-border);
+  color: var(--ps-text-muted);
+}
+
+/* Labels: slightly bolder for hierarchy */
+
+.form-label {
+  font-weight: 500;
+  color: var(--ps-text);
+}
+
+/* Buttons: smooth transitions */
+
+.btn {
+  transition: all var(--ps-transition-fast);
+  border-radius: var(--ps-radius-sm);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--ps-primary);
+  --bs-btn-border-color: var(--ps-primary);
+  --bs-btn-hover-bg: var(--ps-primary-hover);
+  --bs-btn-hover-border-color: var(--ps-primary-hover);
+  --bs-btn-active-bg: var(--ps-primary-hover);
+  --bs-btn-active-border-color: var(--ps-primary-hover);
+}
+
+/* Profile buttons: pill chips with smooth active-state transition */
+
+.profile-button {
+  border-radius: var(--ps-radius-pill) !important;
+  border-color: var(--ps-border) !important;
+  color: var(--ps-text-muted) !important;
+  background-color: var(--ps-surface) !important;
+  font-weight: 500;
+  transition: all var(--ps-transition);
+}
+
+.profile-button:hover {
+  background-color: var(--ps-surface-hover) !important;
+  border-color: var(--ps-primary-border) !important;
+  color: var(--ps-primary) !important;
+}
+
+.profile-button.active {
+  background-color: var(--ps-primary) !important;
+  border-color: var(--ps-primary) !important;
+  color: #fff !important;
+}
+
+/* Summary card: theme-aware surface (replaces hardcoded text-bg-light) */
+
+#summaryCard {
+  background-color: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  box-shadow: var(--ps-shadow-sm);
+}
+
+#summaryCard .card-body {
+  color: var(--ps-text);
+}
+
+/* Markdown rendered inside the summary */
+
+#summary h1,
+#summary h2,
+#summary h3 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+#summary h1 { font-size: 1.25rem; }
+#summary h2 { font-size: 1.15rem; }
+#summary h3 { font-size: 1.05rem; }
+
+#summary p {
+  margin-bottom: 0.75em;
+  line-height: 1.6;
+}
+
+#summary li {
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+#summary ul,
+#summary ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+#summary code {
+  background-color: var(--ps-surface-hover);
+  border-radius: var(--ps-radius-sm);
+  padding: 0.1em 0.35em;
+  font-family: var(--ps-font-mono);
+  font-size: 0.875em;
+}
+
+#summary pre {
+  background-color: var(--ps-surface-hover);
+  border-radius: var(--ps-radius);
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+
+#summary pre code {
+  background: none;
+  padding: 0;
+}
+
+#summary blockquote {
+  border-left: 3px solid var(--ps-primary-border);
+  padding-left: 1em;
+  margin-left: 0;
+  color: var(--ps-text-muted);
+}
+
+#summary a {
+  color: var(--ps-primary);
+  text-decoration: none;
+}
+
+#summary a:hover {
+  text-decoration: underline;
+}
+
+#summary table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 0.75em;
+}
+
+#summary th,
+#summary td {
+  border: 1px solid var(--ps-border);
+  padding: 0.4em 0.6em;
+}
+
+#summary th {
+  background-color: var(--ps-surface-hover);
+}
+
+/* Instructions hint: muted placeholder-like text for the default prompt */
+
+textarea.hint {
+  color: var(--ps-text-muted);
+  font-style: italic;
+}
+
+/* Alerts: match radius */
+
+.alert {
+  border-radius: var(--ps-radius);
+}
+
+/* Config page: constrain content width for readability */
+
+.config-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Config page heading */
+
+.config-container h1 {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* Icon buttons in the profile card header */
+
+.icon-btn {
+  width: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* Scrollbar styling for dark mode */
+
+[data-bs-theme="dark"] * {
+  scrollbar-color: #3a3d48 transparent;
+}
+
+[data-bs-theme="dark"] *::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-bs-theme="dark"] *::-webkit-scrollbar-thumb {
+  background-color: #3a3d48;
+  border-radius: 4px;
+}

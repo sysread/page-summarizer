@@ -1,6 +1,9 @@
 import { isReasoningModel } from '../gpt.js';
+import { initTheme } from './theme.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
+  initTheme();
+
   const defaultModel = 'gpt-4o-mini';
   const defaultReasoning = 'medium';
 
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   function reportError(msg) {
     document.getElementById('errors').innerHTML = [
-      `<div class="alert alert-danger alert-dismissible fadee" role="alert">`,
+      `<div class="alert alert-danger alert-dismissible fade" role="alert">`,
       `   <div>${msg}</div>`,
       '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
       '</div>',
@@ -416,9 +419,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     for (const button of buttons) {
       if (button.textContent === currentProfile) {
-        button.className = 'btn btn-sm m-1 text-nowrap btn-outline-primary active';
+        button.className = 'profile-button btn btn-sm text-nowrap btn-outline-primary active';
       } else {
-        button.className = 'btn btn-sm m-1 text-nowrap btn-outline-secondary';
+        button.className = 'profile-button btn btn-sm text-nowrap btn-outline-secondary';
       }
     }
 

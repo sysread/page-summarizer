@@ -7,85 +7,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="stylesheet" href="../../assets/bootstrap.min.css" />
+    <link rel="stylesheet" href="theme.css" />
+
+    <script>
+      var mql = matchMedia('(prefers-color-scheme: dark)');
+      document.documentElement.setAttribute('data-bs-theme', mql.matches ? 'dark' : 'light');
+    </script>
   </head>
   <body class="p-3">
-    <h1>Page summarizer</h1>
+    <div class="config-container">
+      <h1 class="mb-3">Page Summarizer</h1>
 
-    <div id="status"></div>
+      <div id="status"></div>
 
-    <div>
-      <div class="card mb-3">
-        <div class="card-header">Save/Restore profiles</div>
-        <div class="card-body">
-          <button id="export-profiles-btn" class="btn btn-info">Export</button>
+      <div>
+        <div class="card mb-3">
+          <div class="card-header">Save / Restore profiles</div>
+          <div class="card-body">
+            <button id="export-profiles-btn" class="btn btn-info">Export</button>
 
-          <button id="import-profiles-btn" class="btn btn-warning">Import</button>
-          <input type="file" id="import-profiles-file" style="display: none" />
-        </div>
-      </div>
-
-      <div class="card mb-3">
-        <div class="card-header">Global settings</div>
-        <div class="card-body">
-          <div class="input-group">
-            <label class="input-group-text" for="apiKey">OpenAI API Key</label>
-            <input type="text" id="apiKey" name="apiKey" class="form-control" />
-            <button id="open-api-keys" class="btn btn-primary btn-sm" title="OpenAI API keys">&#x2197;</button>
-          </div>
-
-          <div class="form-check mb-3">
-            <input type="checkbox" id="debug" name="debug" class="form-check-input" />
-            <label for="debug" class="form-check-label">Debug mode</label>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-3">
-        <div class="card-header" id="profileCardHeader">
-          <div class="input-group">
-            <select id="profileSelector" name="profileSelector" class="form-select"></select>
-            <button id="add-profile-btn" class="btn btn-success">+</button>
-            <button id="delete-profile-btn" class="btn btn-danger">X</button>
+            <button id="import-profiles-btn" class="btn btn-warning">Import</button>
+            <input type="file" id="import-profiles-file" style="display: none" />
           </div>
         </div>
 
-        <div class="card-body">
-          <div class="form-check mb-3">
-            <input type="checkbox" id="default" name="default" class="form-check-input" />
-            <label for="default" class="form-check-label">Default</label>
-          </div>
+        <div class="card mb-3">
+          <div class="card-header">Global settings</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="apiKey" class="form-label">OpenAI API Key</label>
+              <div class="input-group">
+                <input type="text" id="apiKey" name="apiKey" class="form-control" />
+                <button id="open-api-keys" class="btn btn-outline-secondary btn-sm" title="OpenAI API keys">&#x2197;</button>
+              </div>
+            </div>
 
-          <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" id="name" name="name" class="form-control" />
-          </div>
-
-          <div class="mb-3">
-            <label for="model" class="form-label">Model</label>
-            <div class="input-group">
-              <select id="model" name="model" class="form-select"></select>
-
-              <span class="input-group-text" id="basic-addon3">Reasoning</span>
-              <select id="reasoning" name="reasoning" class="form-select">
-                <option value="">N/A</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+            <div class="mb-3">
+              <label for="theme" class="form-label">Theme</label>
+              <select id="theme" name="theme" class="form-select">
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
               </select>
+            </div>
 
-              <button id="refresh-models-btn" class="btn btn-secondary">Refresh available models</button>
+            <div class="form-check mb-0">
+              <input type="checkbox" id="debug" name="debug" class="form-check-input" />
+              <label for="debug" class="form-check-label">Debug mode</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header" id="profileCardHeader">
+            <div class="input-group">
+              <select id="profileSelector" name="profileSelector" class="form-select"></select>
+              <button id="add-profile-btn" class="btn btn-success icon-btn" title="Add profile">+</button>
+              <button id="delete-profile-btn" class="btn btn-danger icon-btn" title="Delete profile">&times;</button>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label for="customPrompts" class="form-label">Custom Prompts (One per line)</label>
-            <textarea id="customPrompts" name="customPrompts" class="form-control" rows="5"></textarea>
-            <small id="customPromptsCounter" class="form-text text-muted text-end d-block"></small>
+          <div class="card-body">
+            <div class="form-check mb-3">
+              <input type="checkbox" id="default" name="default" class="form-check-input" />
+              <label for="default" class="form-check-label">Default</label>
+            </div>
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input type="text" id="name" name="name" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+              <label for="model" class="form-label">Model</label>
+              <div class="input-group">
+                <select id="model" name="model" class="form-select"></select>
+
+                <span class="input-group-text">Reasoning</span>
+                <select id="reasoning" name="reasoning" class="form-select">
+                  <option value="">N/A</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+
+                <button id="refresh-models-btn" class="btn btn-outline-secondary">Refresh models</button>
+              </div>
+            </div>
+
+            <div class="mb-0">
+              <label for="customPrompts" class="form-label">Custom Prompts (one per line)</label>
+              <textarea id="customPrompts" name="customPrompts" class="form-control" rows="5"></textarea>
+              <small id="customPromptsCounter" class="form-text text-muted text-end d-block"></small>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button id="save-profile-btn" type="submit" class="btn btn-primary">Save</button>
+        <button id="save-profile-btn" type="submit" class="btn btn-primary">Save</button>
+      </div>
     </div>
 
     <script type="module" src="config.js"></script>

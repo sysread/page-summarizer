@@ -26,7 +26,7 @@ export async function connectSelectionSummarizer() {
         return;
       }
 
-      await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/selection_summarizer.js']);
+      await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/overlay_styles.js', 'src/scripts/selection_summarizer.js']);
 
       const text = info.selectionText;
       const port = chrome.tabs.connect(tab.id, { name: 'contentScriptPort' });

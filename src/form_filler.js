@@ -38,7 +38,7 @@ export function connectFormFiller() {
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == 'fillForm') {
-      await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/form_filler.js']);
+      await loadSupportScripts({ id: tab.id }, ['assets/marked.min.js', 'src/scripts/overlay_styles.js', 'src/scripts/form_filler.js']);
 
       const port = chrome.tabs.connect(tab.id, { name: 'fillForm' });
       port.postMessage({ action: 'DISPLAY_OVERLAY' });

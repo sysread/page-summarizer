@@ -1,7 +1,10 @@
 import { wantModel, isReasoningModel } from '../gpt.js';
 import { addProfile, deleteProfile, buildDefaultProfile } from '../profiles.js';
+import { initTheme, setTheme } from './theme.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+
   const defaultModel = 'gpt-4o-mini';
   const defaultReasoning = 'medium';
 
@@ -401,7 +404,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function showStatus(msg, type) {
     status.innerHTML = [
-      `<div class="alert alert-${type} alert-dismissible fadee" role="alert">`,
+      `<div class="alert alert-${type} alert-dismissible fade" role="alert">`,
       `   <div>${msg}</div>`,
       '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
       '</div>',
@@ -441,6 +444,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('open-api-keys').addEventListener('click', function () {
     chrome.tabs.create({ url: 'https://platform.openai.com/api-keys' });
   });
+
+  // Theme selector: applies immediately on change, no save needed
+  const themeSelect = document.getElementById('theme');
+  const { theme: storedTheme } = await chrome.storage.sync.get('theme');
+  themeSelect.value = storedTheme || 'system';
+  themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
 
   // Powers the button that exports the current profile config
   document.getElementById('export-profiles-btn').addEventListener('click', function () {

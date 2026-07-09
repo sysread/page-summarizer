@@ -7,16 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="stylesheet" href="../../assets/bootstrap.min.css" />
+    <link rel="stylesheet" href="theme.css" />
 
-    <style>
-      li {
-        margin-bottom: 0.5em;
-      }
-    </style>
+    <script>
+      // Set data-bs-theme before first paint to avoid a flash of the wrong
+      // theme. The default is the system preference; theme.js reconciles
+      // with the user's stored override (chrome.storage.sync) after load.
+      var mql = matchMedia('(prefers-color-scheme: dark)');
+      document.documentElement.setAttribute('data-bs-theme', mql.matches ? 'dark' : 'light');
+    </script>
   </head>
-  <body class="p-2">
+  <body class="p-3">
     <div id="header" class="mb-3 visually-hidden">
-      <h2 class="position-relative">
+      <h2 class="position-relative fs-5 fw-semibold mb-0">
         Page Summarizer
 
         <span class="fs-6 text-body-secondary position-absolute top-0 end-0">
@@ -25,19 +28,19 @@
       </h2>
     </div>
 
-    <div class="btn-group mb-1">
-      <span class="input-group-text">Profile</span>
-      <div class="d-flex flex-wrap mb-1" id="profileContainer"></div>
+    <div class="mb-2">
+      <label class="form-label small fw-semibold mb-1">Profile</label>
+      <div class="d-flex flex-wrap gap-1" id="profileContainer"></div>
     </div>
 
-    <div class="input-group input-group-sm mb-2">
-      <span class="input-group-text">Model</span>
-      <select id="model" name="model" class="form-select"></select>
+    <div class="mb-2">
+      <label class="form-label small fw-semibold mb-1" for="model">Model</label>
+      <select id="model" name="model" class="form-select form-select-sm"></select>
     </div>
 
-    <div class="input-group input-group-sm mb-2">
-      <span class="input-group-text">Reasoning Effort</span>
-      <select id="reasoning" name="reasoning" class="form-select">
+    <div class="mb-2">
+      <label class="form-label small fw-semibold mb-1" for="reasoning">Reasoning Effort</label>
+      <select id="reasoning" name="reasoning" class="form-select form-select-sm">
         <option value="">N/A</option>
         <option value="low">Low</option>
         <option value="medium">Medium</option>
@@ -45,26 +48,27 @@
       </select>
     </div>
 
-    <div class="input-group input-group-sm mb-3">
+    <div class="mb-3">
+      <label class="form-label small fw-semibold mb-1" for="instructions">Instructions</label>
       <textarea id="instructions" class="hint form-control" rows="3"></textarea>
     </div>
 
-    <div class="input-group input-group-sm mb-3">
-      <button id="summarize" class="btn btn-primary btn-sm" title="Summarize page">Summarize page</button>
-      <button id="newWindow" class="btn btn-outline-primary btn-sm" title="Open in new window">&#x2197;</button>
-      <button id="copySummary" class="btn btn-outline-primary btn-sm" disabled title="Copy summary">&#x1F4CB;</button>
-      <button id="options" class="btn btn-outline-primary btn-sm" title="Settings">&#x2699;</button>
+    <div class="d-flex gap-2 mb-3">
+      <button id="summarize" class="btn btn-primary btn-sm flex-grow-1" title="Summarize page">Summarize page</button>
+      <button id="newWindow" class="btn btn-outline-secondary btn-sm" title="Open in new window">&#x2197;</button>
+      <button id="copySummary" class="btn btn-outline-secondary btn-sm" disabled title="Copy summary">&#x1F4CB;</button>
+      <button id="options" class="btn btn-outline-secondary btn-sm" title="Settings">&#x2699;</button>
     </div>
 
     <div id="errors"></div>
 
-    <div id="summaryCard" class="card mb-3 text-bg-light visually-hidden">
+    <div id="summaryCard" class="card mb-3 visually-hidden">
       <div class="card-body">
         <div id="summary"></div>
       </div>
     </div>
 
-    <div id="debug mb-3"></div>
+    <div id="debug" class="mb-3"></div>
 
     <script src="../../assets/marked.min.js"></script>
     <script src="../../assets/bootstrap.bundle.min.js"></script>
