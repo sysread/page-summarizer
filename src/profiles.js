@@ -47,3 +47,23 @@ export function deleteProfile(config, name) {
   delete config[`profile__${name}`];
   return { config };
 }
+
+// Move a profile from its current position to the position of the
+// target profile (inserting before it). Returns { config } on success
+// or { error } on failure. The config object is mutated in place.
+export function reorderProfiles(config, fromName, toName) {
+  if (!config.profiles.includes(fromName)) {
+    return { error: `Profile "${fromName}" does not exist.` };
+  }
+  if (!config.profiles.includes(toName)) {
+    return { error: `Profile "${toName}" does not exist.` };
+  }
+  if (fromName === toName) {
+    return { config };
+  }
+  const fromIdx = config.profiles.indexOf(fromName);
+  const toIdx = config.profiles.indexOf(toName);
+  config.profiles.splice(fromIdx, 1);
+  config.profiles.splice(toIdx, 0, fromName);
+  return { config };
+}

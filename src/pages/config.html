@@ -66,15 +66,17 @@
 
       <!-- 3. Profiles -->
       <div class="card mb-3">
-        <div class="card-header" id="profileCardHeader">
-          <div class="input-group">
-            <select id="profileSelector" name="profileSelector" class="form-select"></select>
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <span>Profiles</span>
+          <div class="d-flex gap-1">
             <button id="add-profile-btn" class="btn btn-success icon-btn" title="Add profile">+</button>
-            <button id="delete-profile-btn" class="btn btn-danger icon-btn" title="Delete profile">&times;</button>
+            <button id="delete-profile-btn" class="btn btn-danger icon-btn" title="Delete selected profile">&times;</button>
           </div>
         </div>
 
         <div class="card-body">
+          <div id="profileButtonContainer" class="d-flex flex-wrap gap-1 mb-3"></div>
+
           <div class="form-check mb-3">
             <input type="checkbox" id="default" name="default" class="form-check-input" />
             <label for="default" class="form-check-label">Default profile</label>

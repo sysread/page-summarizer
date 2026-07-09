@@ -1,5 +1,5 @@
 import { wantModel, isReasoningModel } from '../gpt.js';
-import { addProfile, deleteProfile, buildDefaultProfile } from '../profiles.js';
+import { addProfile, deleteProfile, reorderProfiles, buildDefaultProfile } from '../profiles.js';
 import { initTheme, setTheme } from './theme.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const status = document.getElementById('status');
 
-  const profileSelector = document.getElementById('profileSelector');
+  const profileButtonContainer = document.getElementById('profileButtonContainer');
 
   // Global options
   const apiKey = document.getElementById('apiKey');
@@ -36,6 +36,77 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let config;
   let currentProfile;
+
+  // Drag-and-drop state for reordering profile buttons
+  let draggedProfile = null;
+
+  function createProfileButton(profileName) {
+    const button = document.createElement('button');
+    button.className = 'profile-button btn btn-sm btn-outline-secondary text-nowrap';
+    button.textContent = profileName;
+    button.dataset.profile = profileName;
+    button.draggable = true;
+
+    button.addEventListener('click', () => selectProfile(profileName));
+    button.addEventListener('dragstart', handleDragStart);
+    button.addEventListener('dragover', handleDragOver);
+    button.addEventListener('dragenter', handleDragEnter);
+    button.addEventListener('dragleave', handleDragLeave);
+    button.addEventListener('drop', handleDrop);
+    button.addEventListener('dragend', handleDragEnd);
+
+    return button;
+  }
+
+  function renderProfileButtons() {
+    profileButtonContainer.innerHTML = '';
+    config.profiles.forEach((name) => {
+      profileButtonContainer.appendChild(createProfileButton(name));
+    });
+  }
+
+  function handleDragStart(e) {
+    draggedProfile = e.currentTarget.dataset.profile;
+    e.currentTarget.classList.add('ps-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleDragEnter(e) {
+    const target = e.currentTarget;
+    if (target.dataset.profile !== draggedProfile) {
+      target.classList.add('ps-drag-target');
+    }
+  }
+
+  function handleDragLeave(e) {
+    e.currentTarget.classList.remove('ps-drag-target');
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const targetProfile = e.currentTarget.dataset.profile;
+    e.currentTarget.classList.remove('ps-drag-target');
+
+    if (draggedProfile && targetProfile && draggedProfile !== targetProfile) {
+      reorderProfiles(config, draggedProfile, targetProfile);
+      chrome.storage.sync.set({ profiles: config.profiles });
+      renderProfileButtons();
+      selectProfile(currentProfile);
+    }
+  }
+
+  function handleDragEnd() {
+    draggedProfile = null;
+    profileButtonContainer.querySelectorAll('.ps-dragging, .ps-drag-target').forEach((el) => {
+      el.classList.remove('ps-dragging', 'ps-drag-target');
+    });
+  }
 
   // Partially mask an API key for display: show the prefix and last few
   // chars, replace the middle with dots. Short keys are fully masked.
@@ -213,10 +284,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      profileSelector.remove(profileSelector.selectedIndex);
-
       await chrome.storage.sync.set(config);
 
+      renderProfileButtons();
       showSuccess(`Profile "${currentProfile}" deleted.`);
       selectProfile(config.defaultProfile);
     }
@@ -235,11 +305,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await chrome.storage.sync.set(config);
 
-    addOption(name);
-
-    profileSelector.value = name;
-    const event = new Event('change', { bubbles: true });
-    profileSelector.dispatchEvent(event);
+    renderProfileButtons();
+    selectProfile(name);
   }
 
   async function reloadConfig() {
@@ -263,19 +330,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleApiKeyBtn.textContent = '\u{1F441}';
     updateApiKeyHint();
 
-    // Load profiles into the dropdown and select the current profile.
-    // Sort the profiles such that the default profile is always first.
-    const sortedProfileNames = config.profiles.sort((a, b) => {
-      if (a === config.defaultProfile) return -1;
-      if (b === config.defaultProfile) return 1;
-      return a.localeCompare(b);
-    });
-
-    // Clear the current options before we repopulate them
-    profileSelector.innerHTML = '';
-
-    // Populate the profile selector dropdown
-    sortedProfileNames.forEach(addOption);
+    // Load profiles into the button container in stored order (no sorting;
+    // the user controls order via drag-and-drop).
+    renderProfileButtons();
 
     // Populate the model selector dropdown if possible
     if (config.models && config.models.length > 0) {
@@ -444,20 +501,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function addOption(name) {
-    const option = new Option(name, name);
-    option.selected = name == currentProfile;
-    profileSelector.add(option);
-    return option;
-  }
-
   // Update the form inputs with profile values
   function selectProfile(profile) {
     if (config.profiles.includes(profile)) {
       const data = config[`profile__${profile}`];
 
       currentProfile = profile;
-      profileSelector.value = profile;
+
+      // Update button classes to highlight the active profile
+      const buttons = profileButtonContainer.getElementsByClassName('profile-button');
+      for (const button of buttons) {
+        if (button.dataset.profile === currentProfile) {
+          button.className = 'profile-button btn btn-sm text-nowrap btn-outline-primary active';
+        } else {
+          button.className = 'profile-button btn btn-sm text-nowrap btn-outline-secondary';
+        }
+      }
 
       name.value = profile;
       modelSelect.value = data.model || defaultModel;
@@ -479,7 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function showStatus(msg, type) {
     status.innerHTML = [
-      `<div class="alert alert-${type} alert-dismissible fade" role="alert">`,
+      `<div class="alert alert-${type} alert-dismissible fade show" role="alert">`,
       `   <div>${msg}</div>`,
       '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
       '</div>',
@@ -493,11 +552,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showSuccess(msg) {
     showStatus(msg, 'success');
   }
-
-  // Update form inputs when profile is changed
-  profileSelector.addEventListener('change', (e) => {
-    selectProfile(e.target.value);
-  });
 
   // Handler to add new profile
   document.getElementById('add-profile-btn').addEventListener('click', async () => {

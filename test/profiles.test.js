@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addProfile, deleteProfile, buildDefaultProfile } from '../src/profiles.js';
+import { addProfile, deleteProfile, reorderProfiles, buildDefaultProfile } from '../src/profiles.js';
 
 //---- Layer 4: Pure profile CRUD tests (no mocks needed) ----
 
@@ -79,4 +79,39 @@ test('deleteProfile: rejects deleting non-existent profile', () => {
   const result = deleteProfile(config, 'nonexistent');
   assert.equal(result.error, 'Profile "nonexistent" does not exist.');
   assert.equal(config.profiles.length, 2);
+});
+
+test('reorderProfiles: moves a profile before the target', () => {
+  const config = setupConfig();
+  assert.deepEqual(config.profiles, ['default', 'work']);
+  const result = reorderProfiles(config, 'work', 'default');
+  assert.equal(result.config, config);
+  assert.deepEqual(config.profiles, ['work', 'default']);
+});
+
+test('reorderProfiles: moves target forward correctly', () => {
+  const config = { profiles: ['a', 'b', 'c', 'd'] };
+  reorderProfiles(config, 'a', 'c');
+  assert.deepEqual(config.profiles, ['b', 'c', 'a', 'd']);
+});
+
+test('reorderProfiles: no-op when from and target are the same', () => {
+  const config = setupConfig();
+  const result = reorderProfiles(config, 'default', 'default');
+  assert.equal(result.config, config);
+  assert.deepEqual(config.profiles, ['default', 'work']);
+});
+
+test('reorderProfiles: rejects non-existent from name', () => {
+  const config = setupConfig();
+  const result = reorderProfiles(config, 'nonexistent', 'work');
+  assert.equal(result.error, 'Profile "nonexistent" does not exist.');
+  assert.deepEqual(config.profiles, ['default', 'work']);
+});
+
+test('reorderProfiles: rejects non-existent target name', () => {
+  const config = setupConfig();
+  const result = reorderProfiles(config, 'default', 'nonexistent');
+  assert.equal(result.error, 'Profile "nonexistent" does not exist.');
+  assert.deepEqual(config.profiles, ['default', 'work']);
 });

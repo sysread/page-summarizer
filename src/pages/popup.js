@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   //----------------------------------------------------------------------------
   function reportError(msg) {
     document.getElementById('errors').innerHTML = [
-      `<div class="alert alert-danger alert-dismissible fade" role="alert">`,
+      `<div class="alert alert-danger alert-dismissible fade show" role="alert">`,
       `   <div>${msg}</div>`,
       '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
       '</div>',
@@ -374,16 +374,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       return;
     }
 
-    const sortedProfiles = profiles.sort((a, b) => {
-      if (a === defaultProfile) return -1;
-      if (b === defaultProfile) return 1;
-      return a.localeCompare(b);
-    });
-
-    // Clear existing buttons
+    // Clear existing buttons and render in stored order (the user controls
+    // order via drag-and-drop in the settings page).
     profileContainer.innerHTML = '';
 
-    sortedProfiles.forEach(async (profileName) => {
+    profiles.forEach(async (profileName) => {
       const button = document.createElement('button');
       button.className = 'profile-button btn btn-sm btn-outline-secondary text-nowrap';
       button.textContent = profileName;

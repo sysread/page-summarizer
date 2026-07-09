@@ -144,6 +144,7 @@ body {
   background-color: var(--ps-surface) !important;
   font-weight: 500;
   transition: all var(--ps-transition);
+  cursor: pointer;
 }
 
 .profile-button:hover {
@@ -156,6 +157,17 @@ body {
   background-color: var(--ps-primary) !important;
   border-color: var(--ps-primary) !important;
   color: #fff !important;
+}
+
+/* Drag-and-drop reordering feedback */
+
+.profile-button.ps-dragging {
+  opacity: 0.4;
+}
+
+.profile-button.ps-drag-target {
+  border-color: var(--ps-primary) !important;
+  box-shadow: -2px 0 0 0 var(--ps-primary);
 }
 
 /* Summary card: theme-aware surface (replaces hardcoded text-bg-light) */
